@@ -1,0 +1,22 @@
+Package: creapower
+Type: Package
+Title: Power generation data for CREA
+Version: 0.1.0
+Authors@R: c(
+    person("Lauri", "Myllyvirta", email = "lauri@energyandcleanair.org", role = c("cre","aut")),
+    person("Hubert", "Thieriot", email = "hubert@energyandcleanair.org", role = c("aut"))
+    )
+Maintainer: Hubert Thieriot <hubert@energyandcleanair.org>
+Description: Collect and store power generation data from various sources
+License: GPL 3.0
+Encoding: UTF-8
+LazyData: true
+Imports:
+    tidyverse,
+    pbapply,
+    googleCloudStorageR,
+    eia,
+    entsoeapi
+Remotes:
+    krose/entsoeapi
+RoxygenNote: 7.1.1

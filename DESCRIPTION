@@ -18,5 +18,5 @@ Imports:
     eia,
     entsoeapi
 Remotes:
-    krose/entsoeapi
+    hubert-thieriot/entsoeapi
 RoxygenNote: 7.1.1

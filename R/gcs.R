@@ -3,19 +3,19 @@ gcs.auth <- function(force_service_account=F){
     suppressWarnings(readRenviron(".env"))
     suppressWarnings(readRenviron(".Renviron"))
     
-    # Use USER specific credentials if set
-    if(Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS")!="" & !force_service_account){
-      message("Using local user rights for GCS: ", Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
-      googleCloudStorageR::gcs_auth(json_file=Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS"))  
+    # First try to see if we're on a Compute Engine instance
+    googleAuthR::gar_gce_auth_default()
+    
+    if (!googleAuthR::gar_has_token()){
+      # Use USER specific credentials if set
+      if(Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS")!="" & !force_service_account){
+        message("Using local user rights for GCS: ", Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+        googleCloudStorageR::gcs_auth(json_file=Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS"))  
+      }
+      
+      # Otherwise, use service account created for creapower
+      googleCloudStorageR::gcs_auth(json_file=file.path(pkgload::inst("creapower"),"keys/creapower_key.json"))  
     }
-    
-    # Otherwise, use service account created for creapower
-    googleCloudStorageR::gcs_auth(json_file=file.path(pkgload::inst("creapower"),"keys/creapower_key.json"))
-    
-    
-    # googleAuthR::gar_set_client(json= file.path(pkgload::inst("creapower"),"creapower_oauth.json"))
-    # googleAuthR::gar_auth(scopes = c("https://www.googleapis.com/auth/devstorage.full_control",
-    #                                  "https://www.googleapis.com/auth/cloud-platform"))  
   }
 }
 

@@ -75,6 +75,18 @@ entso.collect_generation <- function(date_from, date_to, iso2s=NULL){
     tidyr::complete(nesting(iso2, region, data_source, source), date,
                     fill=list(output_mw=0))
   
+  # Add Europe
+  eu_iso2s <- countrycode::codelist %>% filter(!is.na(eu28)) %>% pull(iso2c)
+  d <- bind_rows(d,
+            d %>%
+              filter(iso2 %in% eu_iso2s) %>%
+              filter(iso2 != "GB") %>% # GB not part of EU, and GB data stopped in July
+              group_by(data_source, source, date) %>%
+              summarise_at("output_mw", sum, na.rm=T) %>%
+              mutate(iso2="EU", region="European Union")
+  )
+  
+  
   return(d)
 }
 

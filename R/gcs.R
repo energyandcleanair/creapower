@@ -1,10 +1,10 @@
-gcs.auth <- function(){
+gcs.auth <- function(force_service_account=F){
   if(!googleAuthR::gar_has_token()){
     suppressWarnings(readRenviron(".env"))
     suppressWarnings(readRenviron(".Renviron"))
     
     # Use USER specific credentials if set
-    if(Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS")!=""){
+    if(Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS")!="" & !force_service_account){
       message("Using local user rights for GCS: ", Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
       googleCloudStorageR::gcs_auth(json_file=Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS"))  
     }

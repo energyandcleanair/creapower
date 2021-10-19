@@ -54,7 +54,7 @@ data.update_generation <- function(data_source,
       gcs.upload(source_path=file_cache,
                  dest_path=file_base)  
     }, error=function(e){
-      warning("Failed to upload ", file_cathe, ": ", e)
+      warning("Failed to upload ", file_cache, ": ", e)
     })
   }
   return(d)

@@ -2,6 +2,19 @@ data.available_data_sources <- function(){
   c("entso", "eia", "posoco")
 }
 
+data.source_homogenising_greps <- function(){
+  list(
+    "Coal"= "Coal",
+    "Wind"= "Wind",
+    "Hydro"= "Hydro",
+    "Solar"= "Solar",
+    "Nuclear"= "Nuclear",
+    "Fossil Gas"= "Fossil Gas|Natural Gas",
+    "Oil"= "Oil",
+    "Other Renewables"= "Geothermal|Renewable|Marine|Biomass",
+    "Other" = "Peat|^Other$|Waste"
+  )
+}
 
 data.combine_generation_cache_and_new <- function(d_cache, d_new){
   if(is.null(d_cache) || nrow(d_cache)==0){
@@ -12,6 +25,14 @@ data.combine_generation_cache_and_new <- function(d_cache, d_new){
       d_new
     )  
   }
+}
+
+
+data.collect_generation <- function(data_source,
+                                    date_from,
+                                    date_to=lubridate::today(tzone="UTC") + 2, ...){
+  collect_fn <- get(sprintf("%s.collect_generation", data_source))
+  return(collect_fn(date_from=date_from, date_to=date_to, ...))
 }
 
 
@@ -37,9 +58,9 @@ data.update_generation <- function(data_source,
   
   date_to <- as.POSIXct(paste0(year,"-12-31"), tz="UTC")
   
-  collect_fn <- get(sprintf("%s.collect_generation", data_source))
   
-  d_new <- collect_fn(date_from=date_from, date_to=date_to)
+  d_new <- data.collect_generation(data_source=data_source,
+                                   date_from=date_from, date_to=date_to)
   
   d <- data.combine_generation_cache_and_new(d_cache, d_new)
   saveRDS(d, file_cache)
@@ -56,7 +77,7 @@ data.update_generation <- function(data_source,
 #' @param year 
 #' @param force if F, then bucket file will only be downloaded if more recent than local one
 #'
-#' @return
+#' @return file path of cache file (whether it has been downloaded or not)
 #' @export
 #'
 #' @examples
@@ -72,8 +93,33 @@ data.download_cache <- function(data_source, year, force=F, cache_folder="cache"
     message("Downloading cache: ", file_base)
     gcs.download(source_path=file_base, dest_path=file_cache)
   }
+  
+  return(file_cache)
 }
 
+
+#' Group various winds together, hydro together, coal together etc
+#'
+#' @param d 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+data.homogenise_generation <- function(gen){
+  
+  source_greps <- data.source_homogenising_greps()
+  
+  d <- lapply(names(source_greps),function(s){
+    gen %>% filter(grepl(source_greps[[s]], source, ignore.case = T)) %>%
+      group_by(iso2, region, date, data_source) %>%
+      summarise_at(c('output_mw'), sum, na.rm=T) %>%
+      mutate(source = s)
+  }) %>%
+    do.call(bind_rows, .)
+  
+  return(d)
+}
 
 #' Getting generation data from various data sources.
 #'
@@ -83,29 +129,37 @@ data.download_cache <- function(data_source, year, force=F, cache_folder="cache"
 #' @param iso2s if NULL, all iso2s are considered.
 #' @param homogenise whether to homogenise sources of power or keep original source classification.
 #'
-#' @return
+#' @return tibble of power generation data
 #' @export
 #'
 #' @examples
-data.get_generation <- function(date_from, date_to, data_sources=data.available_data_sources(), iso2s=NULL, homogenise=T){
-  
+data.get_generation <- function(date_from, date_to=lubridate::today() + 1,
+                                data_sources=data.available_data_sources(),
+                                iso2s=NULL, homogenise=T){
   
   years <- seq(lubridate::year(date_from), lubridate::year(date_to))
   
-  # Download cache if required
-  lapply(data_sources, function(data_source){
+  d <- lapply(data_sources, function(data_source){
     lapply(years, function(year){
-      data.download_cache(data_source=data_source, year=year, force=F)
+      data.download_cache(data_source=data_source, year=year, force=F) %>%
+        readRDS()
     })
-  })
+  }) %>%
+    do.call(bind_rows, .)
+  
+  if(!is.null(iso2s)){
+    d <- d %>%
+      filter(iso2 %in% iso2s)
+  }
+  
+  if(homogenise){
+    d <- data.homogenise_generation(d)
+  }
+  
+  return(d)
 }
 
 
-data.get_generation_single <- function(date_from, date_to, data_source, iso2s=NULL, homogenise=T){
-  
-  
-  
-}
   # iso2s=NULL,
   # date_from=lubridate::floor_date(lubridate::today(),"year"),
   # date_to=lubridate::today()){

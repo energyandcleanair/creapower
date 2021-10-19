@@ -1,4 +1,9 @@
 gcs.auth <- function(force_service_account=F){
+  
+  if(force_service_account){
+    googleAuthR::gar_deauth()
+  }
+  
   if(!googleAuthR::gar_has_token()){
     suppressWarnings(readRenviron(".env"))
     suppressWarnings(readRenviron(".Renviron"))

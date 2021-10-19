@@ -3,8 +3,7 @@ Type: Package
 Title: Power generation data for CREA
 Version: 0.1.0
 Authors@R: c(
-    person("Lauri", "Myllyvirta", email = "lauri@energyandcleanair.org", role = c("cre","aut")),
-    person("Hubert", "Thieriot", email = "hubert@energyandcleanair.org", role = c("aut"))
+    person("Hubert", "Thieriot", email = "hubert@energyandcleanair.org", role = c("cre", "aut"))
     )
 Maintainer: Hubert Thieriot <hubert@energyandcleanair.org>
 Description: Collect and store power generation data from various sources

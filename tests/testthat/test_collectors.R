@@ -3,7 +3,7 @@ library(testthat)
 
 test_that("Power generation collection works", {
 
-  data_sources <- c("entso", "eia")
+  data_sources <- c("entso", "eia", "posoco")
   
   for(data_source in data_sources){
     collect_fn <- get(sprintf("%s.collect_generation", data_source))

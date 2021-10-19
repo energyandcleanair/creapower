@@ -7,12 +7,12 @@
 #' @export
 #'
 #' @examples
-posoco.collect_generation <- function(date_from, date_to=lubridate::today()){
+posoco.collect_generation <- function(date_from, date_to=lubridate::today(tzone="UTC")+1){
   
   d <- read.csv("https://robbieandrew.github.io/india/data/POSOCO_data.csv")
   d$date <- lubridate::ymd(d$yyyymmdd)
   
-  readRDS(f) %>%
+  d %>%
     select_if(grepl("date|India.", names(.))) %>%
     select(-c("India..HydroGen")) %>% #We use India..Hydro column instead
     mutate_if(is.numeric, tidyr::replace_na, replace=0) %>%
@@ -41,9 +41,12 @@ posoco.collect_generation <- function(date_from, date_to=lubridate::today()){
     mutate(output_mw=output_gwh * 1000 / 24,
            iso2="IN",
            region="India",
-           data_source="POSOCO") %>%
+           data_source="posoco") %>%
     filter(date>=date_from,
            date<=date_to) %>%
-    select(iso2, region, data_source, date, source, output_mw)
+    select(iso2, region, data_source, date, source, output_mw) %>%
+    ungroup() %>%
+    tidyr::complete(nesting(iso2, region, data_source, source), date,
+                    fill=list(output_mw=0))
 }
 

@@ -59,11 +59,12 @@ collect_generation <- function(data_source,
 
 
 update_generation <- function(data_source,
-                                   year,
-                                   download_from_gcs=T,
-                                   upload_to_gcs=T,
-                                   cache_folder="cache"){
+                              year=lubridate::year(lubridate::today()),
+                              download_from_gcs=T,
+                              upload_to_gcs=T,
+                              cache_folder="cache"){
   
+  #TODO deal with risk that end of year isn't updated by cron jobs
   dir.create(file.path(cache_folder, data_source), showWarnings = F, recursive = T)
   file_base <- sprintf("%s/gen_%d.RDS", data_source, year)
   file_cache <- file.path(cache_folder, file_base)

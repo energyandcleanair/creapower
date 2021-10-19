@@ -22,7 +22,7 @@ entso.get_entso_token <- function(){
 #' @export
 #'
 #' @examples
-entso.collect_generation <- function(date_from, date_to, iso2s=NULL){
+entso.collect_generation <- function(date_from, date_to=lubridate::today(tzone="UTC")+1, iso2s=NULL){
   
   eics <- entsoeapi::en_eic() %>%
     filter(AreaTypeCode=="CTY") %>%
@@ -90,109 +90,6 @@ entso.collect_generation <- function(date_from, date_to, iso2s=NULL){
   return(d)
 }
 
-
-
-entso.get_generation <- function(
-  iso2s=NULL,
-  date_from=lubridate::floor_date(lubridate::today(),"year"),
-  date_to=lubridate::today()){
-  
-  if(is.null(iso2s)){
-    iso2s <-  entsoeapi::en_eic() %>%
-      filter(AreaTypeCode=="CTY") %>%
-      pull(MapCode) %>%
-      unique()
-  }
-  
-  years <- seq(lubridate::year(date_from), lubridate::year(date_to))
-  
-  # Update cache from EIA
-  pbapply::pblapply(iso2s, function(iso2){
-    print(iso2)
-    lapply(years, function(year){
-      print(year)
-      entso.update_generation(iso2=iso2, year=year)
-      })
-  })
-  
-  # Return requested generation
-  lapply(iso2s, function(iso2){
-    lapply(years, function(year){
-      readRDS(sprintf("cache/entso/gen_%s_%d.RDS", iso2, year)) %>%
-        filter(quantity_Measure_Unit.name=="MAW") %>%
-        mutate(iso2=iso2,
-               region=countrycode::countrycode(iso2, "iso2c", "country.name"),
-               data_source="entso") %>%
-        rename(
-          date=dt,
-          output_mw=quantity,
-          codes=MktPSRType
-        ) %>%
-        left_join(
-          entsoeapi::en_generation_codes() %>%
-            select(codes, source=meaning)
-        ) %>%
-        select(iso2, region, data_source, date, source, output_mw)
-    }) %>%
-      do.call(bind_rows, .) %>%
-      filter(date>=as.Date(date_from),
-             date<=as.Date(date_to))
-  }) %>%
-    do.call(bind_rows, .)
-}
-
-
-
-#' Update local and GCS cache of ENTSO generation data
-#'
-#' @param iso2 
-#' @param year 
-#' @param download_from_gcs 
-#' @param upload_to_gcs 
-#' @param cache_folder 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-entso.update_generation <- function(iso2,
-                                    year,
-                                    download_from_gcs=T,
-                                    upload_to_gcs=T,
-                                    cache_folder="cache"){
-  
-  dir.create(file.path(cache_colder, "entso"), showWarnings = F, recursive = T)
-  file_base <- sprintf("entso/gen_%s_%d.RDS",iso2,year)
-  file_cache <- file.path(cache_folder, file_base)
-  
-  
-  if(download_from_gcs){
-    gcs.download(source_path=file_base,
-                 dest_path=file_cache)
-  }
-  
-  
-  if(file.exists(file_cache)){
-    d_cache <- readRDS(file_cache)
-    date_from <- max(d_cache$dt)-lubridate::days(2)
-  }else{
-    d_cache <- tibble::tibble()
-    date_from <- as.POSIXct(paste0(year,"-01-01"), tz="UTC")
-  }
-  
-  d_new <- entso.collect_generation(iso2=iso2,
-                        date_from=date_from,
-                        date_to=as.POSIXct(paste0(year,"-12-31"), tz="UTC"))
-      
-  d <- data.combine_generation_cache_and_new(d_cache, d_new)
-  saveRDS(d, file_cache)
-  
-  if(upload_to_gcs){
-    gcs.upload(source_path=file_cache,
-               dest_path=file_base)
-  }
-  return(d)
-}
 
 
 # Capacity ----------------------------------------------------------------

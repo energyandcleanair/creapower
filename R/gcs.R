@@ -21,6 +21,7 @@ gcs.auth <- function(force_service_account=F){
 
 
 gcs.download <- function(source_path, dest_path, overwrite=T){
+  gcs.auth()
   googleCloudStorageR::gcs_get_object(file.path("power/creapower/cache", source_path),
                                       saveToDisk=dest_path,
                                       overwrite=overwrite)
@@ -28,7 +29,9 @@ gcs.download <- function(source_path, dest_path, overwrite=T){
 
 
 gcs.upload<- function(source_path, dest_path, overwrite=T){
+  gcs.auth()
   googleCloudStorageR::gcs_upload(file=source_path,
                                   name=file.path("power/creapower/cache", dest_path),
+                                  upload_type="simple",
                                   predefinedAcl="default")
 }

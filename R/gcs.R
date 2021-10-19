@@ -4,7 +4,7 @@ gcs.auth <- function(force_service_account=F){
     suppressWarnings(readRenviron(".Renviron"))
     
     # First try to see if we're on a Compute Engine instance
-    googleAuthR::gar_gce_auth_default()
+    googleAuthR::gar_gce_auth()
     
     if (!googleAuthR::gar_has_token()){
       # Use USER specific credentials if set

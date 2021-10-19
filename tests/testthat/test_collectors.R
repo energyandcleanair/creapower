@@ -8,7 +8,7 @@ test_that("Power generation collection works", {
   for(data_source in data_sources){
     print(data_source)
     date_from <- lubridate::today(tzone="UTC")-2
-    d <- data.collect_generation(data_source=data_source, date_from=date_from)
+    d <- collect_generation(data_source=data_source, date_from=date_from)
     
     # Shouldn't be grouped
     expect_false(is.grouped_df(d))

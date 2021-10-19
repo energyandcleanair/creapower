@@ -10,9 +10,9 @@ test_that("Source homogenisation doesn't lead to double counting", {
   
   for(data_source in data_sources){
     print(data_source)
-    gen <- data.get_generation(data_source=data_source, date_from=date_from)
+    gen <- get_generation(data_source=data_source, date_from=date_from)
     
-    gen_agg <- data.homogenise_generation(gen)
+    gen_agg <- homogenise_generation(gen)
     
     compare <- gen %>%
       group_by(iso2, region, data_source, date) %>%

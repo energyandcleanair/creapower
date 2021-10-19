@@ -29,13 +29,13 @@ This is a basic example which shows you how to solve a common problem:
 library(creapower)
 
 # Get generation data with homogenised sources (Coal, Hydro, Wind, Solar etc.)
-creapower::data.get_generation(date_from="2021-01-01", iso2s="DE")
+creapower::get_generation(date_from="2021-01-01", iso2s="DE")
 
 # Get generation data with original sources (Coal, Hydro pump, Wind offshore, Wind onshore etc.)
-creapower::data.get_generation(date_from="2021-01-01", iso2s="DE", homogenise=F)
+creapower::get_generation(date_from="2021-01-01", iso2s="DE", homogenise=F)
 
 # Get generation data from specific data sources
-creapower::data.get_generation(date_from="2021-01-01", iso2s="DE", data_sources="entso")
+creapower::get_generation(date_from="2021-01-01", iso2s="DE", data_sources="entso")
 
 ```
 

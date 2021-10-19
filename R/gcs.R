@@ -19,6 +19,18 @@ gcs.auth <- function(force_service_account=F){
   }
 }
 
+gcs.modification_date <- function(source_path){
+  gcs.auth()
+  tryCatch({
+    m <- googleCloudStorageR::gcs_get_object(file.path("power/creapower/cache", source_path),
+                                        meta=T)
+    return(lubridate::as_datetime(m$updated))
+  }, error=function(e){
+    warning("File does not exist: ", source_path)
+    return(lubridate::date("0000-01-01"))
+  })
+}
+
 
 gcs.download <- function(source_path, dest_path, overwrite=T){
   gcs.auth()

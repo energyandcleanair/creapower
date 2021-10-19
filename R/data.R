@@ -1,3 +1,8 @@
+data.available_data_sources <- function(){
+  c("entso", "eia", "posoco")
+}
+
+
 data.combine_generation_cache_and_new <- function(d_cache, d_new){
   if(is.null(d_cache) || nrow(d_cache)==0){
     return(d_new)
@@ -8,9 +13,6 @@ data.combine_generation_cache_and_new <- function(d_cache, d_new){
     )  
   }
 }
-
-
-
 
 
 data.update_generation <- function(data_source,
@@ -48,9 +50,62 @@ data.update_generation <- function(data_source,
 }
 
 
+#' Download
+#'
+#' @param data_source 
+#' @param year 
+#' @param force if F, then bucket file will only be downloaded if more recent than local one
+#'
+#' @return
+#' @export
+#'
+#' @examples
+data.download_cache <- function(data_source, year, force=F, cache_folder="cache"){
+  
+  dir.create(file.path(cache_folder, data_source), showWarnings = F, recursive = T)
+  file_base <- file.path(data_source, sprintf("gen_%d.RDS", year))
+  file_cache <- file.path(cache_folder, file_base)
+  
+  download <- force || !file.exists(file_cache) || (gcs.modification_date(file_base) > file.info(file_cache)$mtime)
+  
+  if(download){
+    message("Downloading cache: ", file_base)
+    gcs.download(source_path=file_base, dest_path=file_cache)
+  }
+}
 
 
-data.get_generation <- function(){
+#' Getting generation data from various data sources.
+#'
+#' @param date_from 
+#' @param date_to 
+#' @param data_sources one or several of available data sources (see \link(data.available_data_sources)). By default, all available data sources are considered.
+#' @param iso2s if NULL, all iso2s are considered.
+#' @param homogenise whether to homogenise sources of power or keep original source classification.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+data.get_generation <- function(date_from, date_to, data_sources=data.available_data_sources(), iso2s=NULL, homogenise=T){
+  
+  
+  years <- seq(lubridate::year(date_from), lubridate::year(date_to))
+  
+  # Download cache if required
+  lapply(data_sources, function(data_source){
+    lapply(years, function(year){
+      data.download_cache(data_source=data_source, year=year, force=F)
+    })
+  })
+}
+
+
+data.get_generation_single <- function(date_from, date_to, data_source, iso2s=NULL, homogenise=T){
+  
+  
+  
+}
   # iso2s=NULL,
   # date_from=lubridate::floor_date(lubridate::today(),"year"),
   # date_to=lubridate::today()){
@@ -97,5 +152,5 @@ data.get_generation <- function(){
   #            date<=as.Date(date_to))
   # }) %>%
   #   do.call(bind_rows, .)
-}
+
 

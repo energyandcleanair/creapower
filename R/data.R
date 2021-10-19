@@ -23,14 +23,7 @@ data.update_generation <- function(data_source,
   file_base <- sprintf("%s/gen_%d.RDS", data_source, year)
   file_cache <- file.path(cache_folder, file_base)
   
-  if(download_from_gcs){
-    tryCatch({
-      gcs.download(source_path=file_base,
-                   dest_path=file_cache)  
-    }, error=function(e){
-      warning("Failed to download ", file_base, ": ", e)
-    })
-  }
+  gcs.download(source_path=file_base, dest_path=file_cache)
   
   if(file.exists(file_cache) && file.size(file_cache) > 100){ # case when gcs.download file failed
     d_cache <- readRDS(file_cache)
@@ -49,14 +42,8 @@ data.update_generation <- function(data_source,
   d <- data.combine_generation_cache_and_new(d_cache, d_new)
   saveRDS(d, file_cache)
   
-  if(upload_to_gcs){
-    tryCatch({
-      gcs.upload(source_path=file_cache,
-                 dest_path=file_base)  
-    }, error=function(e){
-      warning("Failed to upload ", file_cache, ": ", e)
-    })
-  }
+  gcs.upload(source_path=file_cache, dest_path=file_base)
+  
   return(d)
 }
 

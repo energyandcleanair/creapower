@@ -22,16 +22,26 @@ gcs.auth <- function(force_service_account=F){
 
 gcs.download <- function(source_path, dest_path, overwrite=T){
   gcs.auth()
-  googleCloudStorageR::gcs_get_object(file.path("power/creapower/cache", source_path),
-                                      saveToDisk=dest_path,
-                                      overwrite=overwrite)
+  tryCatch({
+    googleCloudStorageR::gcs_get_object(file.path("power/creapower/cache", source_path),
+                                        saveToDisk=dest_path,
+                                        overwrite=overwrite)
+  }, error=function(e){
+    warning("Failed to download ", source_path, ": ", e)
+    return(F)
+  })
 }
 
 
 gcs.upload<- function(source_path, dest_path, overwrite=T){
   gcs.auth()
-  googleCloudStorageR::gcs_upload(file=source_path,
-                                  name=file.path("power/creapower/cache", dest_path),
-                                  upload_type="simple",
-                                  predefinedAcl="default")
+  tryCatch({
+    googleCloudStorageR::gcs_upload(file=source_path,
+                                    name=file.path("power/creapower/cache", dest_path),
+                                    upload_type="simple",
+                                    predefinedAcl="default")
+  }, error=function(e){
+    warning("Failed to upload ", source_path, ": ", e)
+    return(F)
+  })
 }

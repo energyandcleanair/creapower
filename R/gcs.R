@@ -1,5 +1,9 @@
 gcs.auth <- function(force_service_account=F){
   
+  # To avoid interactive prompt
+  # which blocks execution on ComputeEngine and AppEngine
+  options(httr_oauth_cache=F)
+  
   if(force_service_account){
     googleAuthR::gar_deauth()
   }
@@ -17,9 +21,6 @@ gcs.auth <- function(force_service_account=F){
         message("Using local user rights for GCS: ", Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
         googleCloudStorageR::gcs_auth(json_file=Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS"))  
       }
-      
-      # Otherwise, use service account created for creapower
-      googleCloudStorageR::gcs_auth(json_file=file.path(pkgload::inst("creapower"),"keys/creapower_key.json"))  
     }
   }
 }
@@ -27,7 +28,7 @@ gcs.auth <- function(force_service_account=F){
 gcs.modification_date <- function(source_path){
   gcs.auth()
   tryCatch({
-    m <- googleCloudStorageR::gcs_get_object(file.path("power/creapower/cache", source_path),
+    m <- googleCloudStorageR::gcs_get_object(file.path("creapower/cache", source_path),
                                         meta=T)
     return(lubridate::as_datetime(m$updated))
   }, error=function(e){
@@ -40,7 +41,7 @@ gcs.modification_date <- function(source_path){
 gcs.download <- function(source_path, dest_path, overwrite=T){
   gcs.auth()
   tryCatch({
-    googleCloudStorageR::gcs_get_object(file.path("power/creapower/cache", source_path),
+    googleCloudStorageR::gcs_get_object(file.path("creapower/cache", source_path),
                                         saveToDisk=dest_path,
                                         overwrite=overwrite)
   }, error=function(e){
@@ -54,7 +55,7 @@ gcs.upload<- function(source_path, dest_path, overwrite=T){
   gcs.auth()
   tryCatch({
     googleCloudStorageR::gcs_upload(file=source_path,
-                                    name=file.path("power/creapower/cache", dest_path),
+                                    name=file.path("creapower/cache", dest_path),
                                     upload_type="simple",
                                     predefinedAcl="default")
   }, error=function(e){

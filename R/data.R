@@ -1,4 +1,4 @@
-data.available_data_sources <- function(){
+available_data_sources <- function(){
   c("entso", "eia", "posoco")
 }
 

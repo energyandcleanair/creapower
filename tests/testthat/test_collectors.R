@@ -3,7 +3,7 @@ library(testthat)
 
 test_that("Power generation collection works", {
 
-  data_sources <- data.available_data_sources()
+  data_sources <- available_data_sources()
   
   for(data_source in data_sources){
     print(data_source)

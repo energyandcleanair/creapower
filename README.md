@@ -23,19 +23,27 @@ remotes::install_github("energyandcleanair/creapower")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(creapower)
 
-# Get generation data with homogenised sources (Coal, Hydro, Wind, Solar etc.)
-creapower::get_generation(date_from="2021-01-01", iso2s="DE")
+# Get Germany generation data with homogenised sources (Coal, Hydro, Wind, Solar etc.)
+creapower::get_generation(date_from="2021-01-01", iso2="DE")
+
+# Get all available countries generation data with homogenised sources (Coal, Hydro, Wind, Solar etc.)
+creapower::get_generation(date_from="2021-01-01")
 
 # Get generation data with original sources (Coal, Hydro pump, Wind offshore, Wind onshore etc.)
-creapower::get_generation(date_from="2021-01-01", iso2s="DE", homogenise=F)
+creapower::get_generation(date_from="2021-01-01", iso2=c("EU","JP"), homogenise=F)
 
-# Get generation data from specific data sources
-creapower::get_generation(date_from="2021-01-01", iso2s="DE", data_sources="entso")
+# Get generation data from specific data source(s)
+creapower::get_generation(date_from="2021-01-01", iso2="DE", data_source="entso")
+
+# Get generation data from specific data source(s)
+creapower::get_generation(date_from="2021-01-01", data_source=c("entso","eia"))
+
+# Available data sources
+creapower::available_data_sources()
 
 ```
 

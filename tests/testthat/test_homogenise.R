@@ -4,7 +4,7 @@ library(testthat)
 
 test_that("Source homogenisation doesn't lead to double counting", {
   
-  data_sources <- data.available_data_sources()
+  data_sources <- available_data_sources()
   
   date_from <- lubridate::today() - 3
   

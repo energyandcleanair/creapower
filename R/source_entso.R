@@ -95,11 +95,11 @@ entso.collect_generation <- function(date_from, date_to=lubridate::today(tzone="
 # Capacity ----------------------------------------------------------------
 
 entso.get_capacity <- function(
-  iso2s=NULL,
+  iso2=NULL,
   years=lubridate::year(lubridate::today())){
   
-  if(is.null(iso2s)){
-    iso2s <-  entsoeapi::en_eic() %>%
+  if(is.null(iso2)){
+    iso2 <-  entsoeapi::en_eic() %>%
       filter(AreaTypeCode=="CTY") %>%
       pull(MapCode) %>%
       unique()
@@ -107,12 +107,12 @@ entso.get_capacity <- function(
   
   
   # Update cache from EIA
-  pbapply::pblapply(iso2s, function(iso2){
+  pbapply::pblapply(iso2, function(iso2){
     lapply(years, function(year){entso.update_capacity(iso2=iso2, year=year)})
   })
   
   # Return requested generation
-  lapply(iso2s, function(iso2){
+  lapply(iso2, function(iso2){
     lapply(years, function(year){
       readRDS(sprintf("cache/entso/cap_%s_%d.RDS", iso2, year)) %>%
         filter(quantity_Measure_Unit.name=="MAW") %>%

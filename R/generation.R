@@ -2,8 +2,8 @@
 #'
 #' @param date_from 
 #' @param date_to 
-#' @param data_sources one or several of available data sources (see \link(data.available_data_sources)). By default, all available data sources are considered.
-#' @param iso2s if NULL, all iso2s are considered.
+#' @param data_source one or several of available data sources (see \link(data.available_data_sources)). By default, all available data sources are considered.
+#' @param iso2 one or several iso2 codes. If NULL, all iso2s are considered.
 #' @param homogenise whether to homogenise sources of power or keep original source classification.
 #'
 #' @return tibble of power generation data
@@ -11,22 +11,22 @@
 #'
 #' @examples
 get_generation <- function(date_from, date_to=lubridate::today() + 1,
-                                data_sources=data.available_data_sources(),
-                                iso2s=NULL, homogenise=T){
+                                data_source=available_data_sources(),
+                                iso2=NULL, homogenise=T){
   
   years <- seq(lubridate::year(date_from), lubridate::year(date_to))
   
-  d <- lapply(data_sources, function(data_source){
+  d <- lapply(data_source, function(ds){
     lapply(years, function(year){
-      data.download_cache(data_source=data_source, year=year, force=F) %>%
+      data.download_cache(data_source=ds, year=year, force=F) %>%
         readRDS()
     })
   }) %>%
     do.call(bind_rows, .)
   
-  if(!is.null(iso2s)){
+  if(!is.null(iso2)){
     d <- d %>%
-      filter(iso2 %in% iso2s)
+      filter(iso2 %in% !!iso2)
   }
   
   if(homogenise){
@@ -63,6 +63,11 @@ update_generation <- function(data_source,
                               download_from_gcs=T,
                               upload_to_gcs=T,
                               cache_folder="cache"){
+  
+  
+  if(length(data_source)!=1){
+    stop("update_generation only supports one data_source at a time")
+  }
   
   #TODO deal with risk that end of year isn't updated by cron jobs
   dir.create(file.path(cache_folder, data_source), showWarnings = F, recursive = T)

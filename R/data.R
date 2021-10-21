@@ -33,11 +33,12 @@ data.download_cache <- function(data_source, year, force=F, cache_folder="cache"
   file_base <- file.path(data_source, sprintf("gen_%d.RDS", year))
   file_cache <- file.path(cache_folder, file_base)
   
-  download <- force || !file.exists(file_cache) || (gcs.modification_date(file_base) > file.info(file_cache)$mtime)
+  download <- force || !file.exists(file_cache)
+    # (gcs.modification_date(file_base) > file.info(file_cache)$mtime) # gcs.modification_date doesn't work for unauthenticated
   
   if(download){
     message("Downloading cache: ", file_base)
-    gcs.download(source_path=file_base, dest_path=file_cache)
+    gcs.download(source_path=file_base, dest_path=file_cache, only_if_modified_since = T)
   }
   
   return(file_cache)

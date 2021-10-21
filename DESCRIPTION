@@ -15,7 +15,8 @@ Imports:
     pbapply,
     googleCloudStorageR,
     eia,
-    entsoeapi
+    entsoeapi,
+    countrycode
 Remotes:
     hubert-thieriot/entsoeapi
 RoxygenNote: 7.1.1

@@ -25,6 +25,7 @@ remotes::install_github("energyandcleanair/creapower")
 
 
 ``` r
+library(tidyverse)
 library(creapower)
 
 # Get Germany generation data with homogenised sources (Coal, Hydro, Wind, Solar etc.)

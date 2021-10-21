@@ -16,9 +16,6 @@ test_that("Power generation collection works", {
     # Shouldn't be grouped
     expect_false(is.grouped_df(d))
     
-    # Shouldn't be grouped
-    expect_false(is.grouped_df(d))
-    
     # Dates should match
     expect_true(min(d$date) == date_from)
     

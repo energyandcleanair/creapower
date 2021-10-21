@@ -1,5 +1,5 @@
 available_data_sources <- function(){
-  c("entso", "eia", "posoco")
+  c("entso", "eia", "posoco", "bmrs")
 }
 
 

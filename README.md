@@ -49,7 +49,9 @@ creapower::get_generation(date_from="2021-01-01", data_source=c("entso","eia"))
 creapower::available_data_sources()
 
 # Get generation data from specific data source(s)
-gen_weekly <- creapower::get_generation(date_from="2021-01-01", iso2=c("EU","US","IN"), freq="week")
+gen_weekly <- creapower::get_generation(date_from="2021-01-01",
+                                        iso2=c("EU","US","IN"),
+                                        freq="week")
 
 ggplot(gen_weekly) +
   geom_area(aes(date, output_mw, fill=source),
@@ -62,13 +64,14 @@ ggplot(gen_weekly) +
 ![Weekly generation data](doc/gen_weekly.jpg)
 
 ```r
+# Generation is returned at the hourly level by default (when available)
 gen_hourly <- creapower::get_generation(date_from="2021-01-01", iso2=c("DE","FR","PL"))
 
 ggplot(gen_hourly) +
   geom_area(aes(date, output_mw, fill=source),
             position = position_stack(reverse = TRUE)) +
   theme_minimal() +
-  scale_fill_power() +
+  scale_fill_power() + 
   facet_wrap(~region)
 ```
 ![Hourly generation data](doc/gen_hourly.jpg)

@@ -6,14 +6,15 @@ available_data_sources <- function(){
 data.source_homogenising_greps <- function(){
   list(
     "Coal"= "Coal",
-    "Wind"= "Wind",
-    "Hydro"= "Hydro",
-    "Solar"= "Solar",
-    "Nuclear"= "Nuclear",
     "Fossil Gas"= "Fossil Gas|Natural Gas",
-    "Oil"= "Oil",
-    "Other Renewables"= "Geothermal|Renewable|Marine|Biomass",
-    "Other" = "Peat|^Other$|Waste"
+    # "Oil"= "Oil",
+    "Nuclear"= "Nuclear",
+    "Hydro"= "Hydro",
+    "Wind"= "Wind",
+    "Solar"= "Solar",
+    # "Other Renewables"= "Geothermal|Renewable|Marine|Biomass",
+    # "Other" = "Peat|^Other$|Waste"
+    "Other"= "Geothermal|Renewable|Marine|Biomass|Peat|^Other$|Waste|Oil"
   )
 }
 

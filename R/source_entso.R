@@ -7,7 +7,16 @@ entso.get_entso_token <- function(){
     stop("Could not find ENTSO_TOKEN in your environment.")
   }
   
-  return(d)
+  return(entso_token)
+}
+
+
+entso.iso2s <- function(){
+  entsoeapi::en_eic() %>%
+    filter(AreaTypeCode=="CTY") %>%
+    filter(MapCode!="GB") %>%
+    pull(MapCode) %>%
+    c("EU")
 }
 
 
@@ -41,7 +50,7 @@ entso.collect_generation <- function(date_from, date_to=lubridate::today(tzone="
       entsoeapi::en_generation_agg_gen_per_type(eic=eic,
                                                 period_start=as.POSIXct(date_from),
                                                 period_end=as.POSIXct(date_to),
-                                                security_token=Sys.getenv("ENTSO_TOKEN"))
+                                                security_token=entso.get_entso_token())
     }, error=function(e){return(tibble::tibble())})
   }
   

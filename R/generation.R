@@ -5,17 +5,24 @@
 #' @param data_source one or several of available data sources (see \link(data.available_data_sources)). By default, all available data sources are considered.
 #' @param iso2 one or several iso2 codes. If NULL, all iso2s are considered.
 #' @param homogenise whether to homogenise sources of power or keep original source classification.
+#' @param freq rounding date at this frequency: can be second, minute, hour, day, week, month, bimonth, quarter, season, halfyear or year
 #'
 #' @return tibble of power generation data
 #' @export
 #'
 #' @examples
 get_generation <- function(date_from, date_to=lubridate::today() + 1,
-                                data_source=available_data_sources(),
-                                iso2=NULL, homogenise=T){
+                           data_source=available_data_sources(),
+                           iso2=NULL,
+                           homogenise=T,
+                           freq=NULL){
+  
+  # Only keeping relevant data sources
+  if(!is.null(iso2)){
+    data_source <- data_source[unlist(lapply(data_source, function(ds){any(iso2 %in% get(sprintf("%s.iso2s", ds))())}))]
+  }
   
   years <- seq(lubridate::year(date_from), lubridate::year(date_to))
-  
   d <- lapply(data_source, function(ds){
     lapply(years, function(year){
       data.download_cache(data_source=ds, year=year, force=F) %>%
@@ -31,6 +38,15 @@ get_generation <- function(date_from, date_to=lubridate::today() + 1,
   
   if(homogenise){
     d <- homogenise_generation(d)
+  }
+  
+  if(!is.null(freq)){
+    d <- d %>%
+      mutate(date=lubridate::floor_date(date, unit=freq)) %>%
+      group_by(across(c(-output_mw))) %>%
+      summarise_at("output_mw", mean)
+    # Note: takin the mean is ok since we've ensured generation data is hourly-complete
+    # If not, we would have had to account for potentially missing data
   }
   
   return(d)
@@ -57,6 +73,9 @@ collect_generation <- function(data_source,
   return(collect_fn(date_from=date_from, date_to=date_to, ...))
 }
 
+data_source_iso2s <- function(data_source){
+  get(sprintf("%s.iso2s", data_source))()
+}
 
 update_generation <- function(data_source,
                               year=lubridate::year(lubridate::today()),
@@ -107,7 +126,7 @@ update_generation <- function(data_source,
 #' @export
 #'
 #' @examples
-homogenise_generation <- function(gen){
+homogenise_generation <- function(gen, do_factor=T){
   
   source_greps <- data.source_homogenising_greps()
   
@@ -118,6 +137,10 @@ homogenise_generation <- function(gen){
       mutate(source = s)
   }) %>%
     do.call(bind_rows, .)
+  
+  if(do_factor){
+    d$source <- factor(d$source, levels=names(source_greps))
+  }
   
   return(d)
 }

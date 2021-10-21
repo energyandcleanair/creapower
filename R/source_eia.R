@@ -4,7 +4,9 @@ eia.init <- function(){
   eia::eia_set_key(Sys.getenv("EIA_KEY"))
 }
 
-
+eia.iso2s <- function(){
+  "US"
+}
 
 eia.collect_generation <- function(date_from, date_to=lubridate::today(tzone="UTC")+1){
   

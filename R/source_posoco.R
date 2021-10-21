@@ -1,3 +1,7 @@
+posoco.iso2s <- function(){
+  "IN"
+}
+
 #' Collect POSOCO data from great Robbie Andrew's work
 #'
 #' @param date_from 

@@ -33,3 +33,13 @@ test_that("Source homogenisation doesn't lead to double counting", {
   }
 })
     
+
+
+
+test_that("Palette covers all homogenised types", {
+  
+  n1 <- names(data.source_homogenising_greps())
+  n2 <- names(palette_power())
+  
+  expect_equal(sort(n1), sort(n2))
+})

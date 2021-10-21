@@ -10,6 +10,12 @@ test_that("Power generation collection works", {
     date_from <- lubridate::today(tzone="UTC")-4
     d <- collect_generation(data_source=data_source, date_from=date_from)
     
+    # ISO2s are covered
+    exect_true(all(unique(d$iso2) %in% data_source_iso2s(data_source=data_source)))
+    
+    # Shouldn't be grouped
+    expect_false(is.grouped_df(d))
+    
     # Shouldn't be grouped
     expect_false(is.grouped_df(d))
     

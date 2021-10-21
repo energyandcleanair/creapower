@@ -100,19 +100,20 @@ update_generation <- function(data_source,
   
   gcs.download(source_path=file_base, dest_path=file_cache)
   
-  if(file.exists(file_cache) && file.size(file_cache) > 100){ # case when gcs.download file failed
-    d_cache <- readRDS(file_cache)
-    date_from <- max(d_cache$date)-lubridate::days(2)
-  }else{
-    d_cache <- tibble::tibble()
-    date_from <- as.POSIXct(paste0(year,"-01-01"), tz="UTC")
+  d_cache <- tibble::tibble()
+  date_from <- as.POSIXct(paste0(year,"-01-01"), tz="UTC")
+  
+  if(file.exists(file_cache) && file.size(file_cache) > 300){ # case when gcs.download file failed
+    tryCatch({
+      d_cache <- readRDS(file_cache)
+      date_from <- max(d_cache$date)-lubridate::days(2)  
+    }, error=function(e){})
   }
   
   date_to <- as.POSIXct(paste0(year,"-12-31"), tz="UTC")
-  
-  
   d_new <- collect_generation(data_source=data_source,
-                                   date_from=date_from, date_to=date_to)
+                              date_from=date_from,
+                              date_to=date_to)
   
   d <- combine_generation_cache_and_new(d_cache, d_new)
   saveRDS(d, file_cache)

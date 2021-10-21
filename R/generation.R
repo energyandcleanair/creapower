@@ -11,7 +11,8 @@
 #' @export
 #'
 #' @examples
-get_generation <- function(date_from, date_to=lubridate::today() + 1,
+get_generation <- function(date_from,
+                           date_to=lubridate::today() + 1,
                            data_source=available_data_sources(),
                            iso2=NULL,
                            homogenise=T,
@@ -35,6 +36,10 @@ get_generation <- function(date_from, date_to=lubridate::today() + 1,
     d <- d %>%
       filter(iso2 %in% !!iso2)
   }
+  
+  d <- d %>%
+    filter(date >= date_from,
+           date <= date_to)
   
   if(homogenise){
     d <- homogenise_generation(d)

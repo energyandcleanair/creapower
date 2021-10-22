@@ -16,7 +16,8 @@ Imports:
     googleCloudStorageR,
     eia,
     entsoeapi,
-    countrycode
+    countrycode,
+    jsonlite
 Remotes:
     hubert-thieriot/entsoeapi
 RoxygenNote: 7.1.1

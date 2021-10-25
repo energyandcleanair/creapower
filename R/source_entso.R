@@ -33,9 +33,10 @@ entso.iso2s <- function(){
 #' @examples
 entso.collect_generation <- function(date_from, date_to=lubridate::today(tzone="UTC")+1, iso2s=NULL){
   
+  print(paste0("Collecting ENTSO: ", date_from, " to ", date_to))
   eics <- entsoeapi::en_eic() %>%
     filter(AreaTypeCode=="CTY") %>%
-    filter(is.null(iso2s) || (MapCode %in% iso2s)) %>%
+    filter(is.null(iso2s) | (MapCode %in% iso2s)) %>%
     distinct(eic=AreaCode, iso2=MapCode) %>%
     filter(iso2!="GB")
   
@@ -47,15 +48,29 @@ entso.collect_generation <- function(date_from, date_to=lubridate::today(tzone="
   
   get_gen_safe <- function(eic, date_from, date_to){
     tryCatch({
-      entsoeapi::en_generation_agg_gen_per_type(eic=eic,
-                                                period_start=as.POSIXct(date_from),
-                                                period_end=as.POSIXct(date_to),
-                                                security_token=entso.get_entso_token())
-    }, error=function(e){return(tibble::tibble())})
+      print(eic)
+      dates <- seq.Date(as.Date(date_from), as.Date(date_to), "day")
+      n_chunk <- 30 # We split per days
+      gen <- split(dates, seq(1, length(dates)) %/% n_chunk) %>%
+        pbapply::pblapply(
+          function(dates){
+            entsoeapi::en_generation_agg_gen_per_type(eic=eic,
+                                                      period_start=as.POSIXct(min(dates)),
+                                                      period_end=as.POSIXct(max(dates)),
+                                                      security_token=entso.get_entso_token())  
+          }
+        ) %>% do.call(bind_rows, .)
+      
+      print(sprintf("%d unique dates found", length(unique(gen$dt))))
+      return(gen)
+    }, error=function(e){
+      warning("Failed to collect generation: ", eic, " :", e)
+      return(tibble::tibble())})
   }
   
   d <- pbapply::pblapply(unique(eics$eic), get_gen_safe, date_from=date_from, date_to=date_to) %>%
-    do.call(bind_rows, .)
+    do.call(bind_rows, .) %>%
+    filter(!is.na(inBiddingZone_Domain.mRID))
   
   d <- d %>%
     rename(eic=inBiddingZone_Domain.mRID,
@@ -85,16 +100,21 @@ entso.collect_generation <- function(date_from, date_to=lubridate::today(tzone="
                     fill=list(output_mw=0))
   
   # Add Europe
-  eu_iso2s <- countrycode::codelist %>% filter(!is.na(eu28)) %>% pull(iso2c)
-  d <- bind_rows(d,
-            d %>%
-              filter(iso2 %in% eu_iso2s) %>%
-              filter(iso2 != "GB") %>% # GB not part of EU, and GB data stopped in July
-              group_by(data_source, source, date) %>%
-              summarise_at("output_mw", sum, na.rm=T) %>%
-              mutate(iso2="EU", region="European Union")
-  )
+  if(is.null(iso2s)){
+    eu_iso2s <- countrycode::codelist %>% filter(!is.na(eu28)) %>% pull(iso2c)
+    d <- bind_rows(d,
+                   d %>%
+                     filter(iso2 %in% eu_iso2s) %>%
+                     filter(iso2 != "GB") %>% # GB not part of EU, and GB data stopped in July
+                     group_by(data_source, source, date) %>%
+                     summarise_at("output_mw", sum, na.rm=T) %>%
+                     mutate(iso2="EU", region="European Union")
+    )
+  }
   
+  # Set duration_hours
+  d <- d %>%
+    mutate(duration_hours=1)
   
   return(d)
 }

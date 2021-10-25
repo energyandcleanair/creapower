@@ -35,7 +35,8 @@ bmrs.collect_generation <- function(date_from, date_to=lubridate::today(tzone="U
             ungroup() %>%
             mutate(iso2="GB",
                    region="Great Britain",
-                   data_source="bmrs") %>%
+                   data_source="bmrs",
+                   duration_hours=1) %>%
             select(iso2, region, date, source, output_mw, data_source),
           classes=c("messages","warning"))
       }, error=function(e){tibble()})
@@ -45,7 +46,7 @@ bmrs.collect_generation <- function(date_from, date_to=lubridate::today(tzone="U
   gen <- gen %>%
     ungroup() %>%
     tidyr::complete(nesting(iso2, region, data_source, source), date,
-                    fill=list(output_mw=0))
+                    fill=list(output_mw=0, duration_hours=1))
   
   return(gen)
 }

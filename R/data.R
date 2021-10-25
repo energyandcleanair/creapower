@@ -2,6 +2,17 @@ available_data_sources <- function(){
   c("entso", "eia", "posoco", "bmrs")
 }
 
+available_iso2s <- function(){
+  lapply(available_data_sources(), function(ds){
+    get(sprintf("%s.iso2s",ds))() %>%
+      tibble(iso2=.) %>%
+      mutate(data_source=ds,
+             region=countrycode::countrycode(iso2, "iso2c", "country.name",
+                                             custom_match=c("EU"="European Union")))
+  }) %>%
+    do.call(bind_rows, .)
+}
+
 
 data.source_homogenising_greps <- function(){
   list(

@@ -70,6 +70,9 @@ gcs.download <- function(source_path, dest_path, only_if_modified_since=T, overw
 
 gcs.upload<- function(source_path, dest_path, overwrite=T){
   gcs.auth()
+  # Prevent resumable upload
+  options(googleCloudStorageR.upload_limit = 100000000L) #~100MB
+  
   tryCatch({
     googleCloudStorageR::gcs_upload(file=source_path,
                                     name=file.path("creapower/cache", dest_path),

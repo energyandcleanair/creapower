@@ -45,12 +45,13 @@ posoco.collect_generation <- function(date_from, date_to=lubridate::today(tzone=
     mutate(output_mw=output_gwh * 1000 / 24,
            iso2="IN",
            region="India",
-           data_source="posoco") %>%
+           data_source="posoco",
+           duration_hours=24) %>%
     filter(date>=date_from,
            date<=date_to) %>%
-    select(iso2, region, data_source, date, source, output_mw) %>%
+    select(iso2, region, data_source, date, source, output_mw, duration_hours) %>%
     ungroup() %>%
     tidyr::complete(nesting(iso2, region, data_source, source), date,
-                    fill=list(output_mw=0))
+                    fill=list(output_mw=0, duration_hours=24))
 }
 

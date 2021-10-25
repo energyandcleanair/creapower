@@ -49,8 +49,9 @@ get_generation <- function(date_from,
     d <- d %>%
       mutate(date=lubridate::floor_date(date, unit=freq)) %>%
       group_by(across(c(-output_mw))) %>%
-      summarise_at("output_mw", mean)
-    # Note: takin the mean is ok since we've ensured generation data is hourly-complete
+      summarise_at("output_mw", mean) %>%
+      ungroup()
+    # Note: taking the mean is ok since we've ensured generation data is hourly-complete
     # If not, we would have had to account for potentially missing data
   }
   
@@ -98,7 +99,9 @@ update_generation <- function(data_source,
   file_base <- sprintf("%s/gen_%d.RDS", data_source, year)
   file_cache <- file.path(cache_folder, file_base)
   
-  gcs.download(source_path=file_base, dest_path=file_cache)
+  if(download_from_gcs){
+    gcs.download(source_path=file_base, dest_path=file_cache)  
+  }
   
   d_cache <- tibble::tibble()
   date_from <- as.POSIXct(paste0(year,"-01-01"), tz="UTC")
@@ -118,7 +121,9 @@ update_generation <- function(data_source,
   d <- combine_generation_cache_and_new(d_cache, d_new)
   saveRDS(d, file_cache)
   
-  gcs.upload(source_path=file_cache, dest_path=file_base)
+  if(upload_to_gcs){
+    gcs.upload(source_path=file_cache, dest_path=file_base)
+  }
   
   return(d)
 }

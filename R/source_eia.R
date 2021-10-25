@@ -35,12 +35,13 @@ eia.collect_generation <- function(date_from, date_to=lubridate::today(tzone="UT
         mutate(source=!!source,
                iso2="US",
                region="United States",
-               data_source="eia"
+               data_source="eia",
+               duration_hours=1
         ) %>%
-        select(iso2, region, data_source, date, source, output_mw=value) %>%
+        select(iso2, region, data_source, date, source, output_mw=value, duration_hours) %>%
         ungroup() %>%
         tidyr::complete(nesting(iso2, region, data_source, source), date,
-                        fill=list(output_mw=0))
+                        fill=list(output_mw=0, duration_hours=1))
     }, error=function(e){return(tibble())})
   }) %>% do.call(bind_rows, .)
 

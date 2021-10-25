@@ -24,10 +24,13 @@ test_that("Power generation collection works", {
     
     # Test columns returned 
     expect_equal(sort(names(d)),
-                 sort(c("iso2","region","data_source","date","source","output_mw")))
+                 sort(c("iso2","region","data_source","date","source","output_mw","duration_hours")))
     
     # Test no NA data
     expect_true(!any(is.na(d$output_mw)))
+    
+    # Power generation sources are covered and not overlapping (#TODO)
+    
     
     # Hourly complete
     d.complete <- d %>%

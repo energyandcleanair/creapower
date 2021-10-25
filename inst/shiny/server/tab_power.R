@@ -60,7 +60,7 @@ output$selectFrequency <- renderUI({
 
 
 output$selectPlotType <- renderUI({
-  selectInput("plot_type", "Plot Type", multiple=F, choices = plot_types, selected="ts")
+  selectInput("plot_type", "Plot Type", multiple=F, choices = plot_types, selected="area")
 })
 
 
@@ -74,17 +74,13 @@ output$selectYears <- renderUI({
 
 # Reactive Elements --------------------------------------
 
-
-power <- reactive({
+power_raw <- reactive({
   
   # To trigger refresh
-  input$power_refresh
-
-  country <- isolate(input$country)
-  sources <- isolate(input$sources)
-  frequency <- isolate(input$frequency)
-  years <- isolate(input$years)
-  req(country, sources, frequency, years)
+  # input$power_refresh
+  country <- input$country
+  years <- input$years
+  req(country, years)
     
   # Get data
   print("Getting power data")
@@ -93,8 +89,27 @@ power <- reactive({
     date_to=sprintf("%d-12-31", years[2]),
     iso2 = country,
     homogenise = T,
-    freq = frequency
+    freq = "hourly"
   )
+  print("Done")
+  return(power)
+})
+
+
+power <- reactive({
+  
+  power_raw <- power_raw()
+  frequency <- input$frequency
+  sources <- input$sources
+  req(power_raw, frequency, sources)
+  
+  print("Processing power data")
+  power <- power_raw %>%
+    filter(source %in% sources) %>%
+    mutate(date=lubridate::floor_date(date, unit=frequency)) %>%
+    group_by(across(c(-output_mw))) %>%
+    summarise_at("output_mw", mean) %>%
+    ungroup()
   print("Done")
   
   return(power)
@@ -126,7 +141,7 @@ output$power_plot <- renderPlotly({
     ungroup()
 
   if(plot_type=="lines"){
-    return(plot_ly(power_sources,
+    plt <- plot_ly(power_sources,
             x = ~date,
             y = ~output_mw,
             color = ~source,
@@ -139,17 +154,11 @@ output$power_plot <- renderPlotly({
       layout(
         hovermode = "x unified",
         yaxis = list(title = 'Power generation (MW)'),
-        xaxis = list(title = ''),
-        annotations = 
-          list(x = 1, y = -0.06, text = caption, 
-               showarrow = F, xref='paper', yref='paper', 
-               xanchor='right', yanchor='auto', xshift=0, yshift=0,
-               font=list(color="#AAAAAA"))
-      ))
+        xaxis = list(title = ''))
   }
   
   if(plot_type=="area"){
-    return(plot_ly(power_sources,
+    plt <- plot_ly(power_sources,
             x = ~date,
             y = ~output_mw,
             color = ~source,
@@ -165,17 +174,11 @@ output$power_plot <- renderPlotly({
       layout(
         hovermode = "x unified",
         yaxis = list(title = 'Power generation (MW)'),
-        xaxis = list(title = ''),
-        annotations = 
-          list(x = 1, y = -0.06, text = caption, 
-               showarrow = F, xref='paper', yref='paper', 
-               xanchor='right', yanchor='auto', xshift=0, yshift=0,
-               font=list(color="#AAAAAA"))
-      ))
+        xaxis = list(title = ''))
   }
   
   if(plot_type=="area_pct"){
-    return(plot_ly(power_sources,
+    plt <- plot_ly(power_sources,
             x = ~date,
             y = ~output_pct,
             color = ~factor(source),
@@ -192,13 +195,7 @@ output$power_plot <- renderPlotly({
         hovermode = "x unified",
         yaxis = list(title = 'Share of power generation',
                      tickformat = '.0%'),
-        xaxis = list(title = ''),
-        annotations = 
-          list(x = 1, y = -0.06, text = caption, 
-               showarrow = F, xref='paper', yref='paper', 
-               xanchor='right', yanchor='auto', xshift=0, yshift=0,
-               font=list(color="#AAAAAA"))
-      ))
+        xaxis = list(title = ''))
   }
   
   if(plot_type=="monthly_bar"){
@@ -209,7 +206,7 @@ output$power_plot <- renderPlotly({
       group_by(iso2, region, month0000, year) %>%
       summarise(output_mw=mean(output_mw))
     
-    return(plot_ly(power_month,
+    plt <- plot_ly(power_month,
                    x = ~month0000,
                    y = ~output_mw,
                    color = ~factor(year),
@@ -217,18 +214,22 @@ output$power_plot <- renderPlotly({
                    colors = 'Reds',
                    type = 'bar',
                    alpha = 0.9,
-                   hovertemplate = '%{year} %{y:,.0f} MW<extra></extra>',
+                   hovertemplate = '%{customdata} %{y:,.0f} MW<extra></extra>',
                    showlegend = T) %>%
              layout(
                hovermode = "x unified",
                yaxis = list(title = 'Power generation (MW)'),
                xaxis = list(title = '',
-                            dtick = "M1", tickformat="%b"),
-               annotations = 
-                 list(x = 1, y = -0.06, text = caption, 
-                      showarrow = F, xref='paper', yref='paper', 
-                      xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                      font=list(color="#AAAAAA"))
-             ))
+                            dtick = "M1", tickformat="%b"))
   }
+  
+  plt <- plt %>%
+    layout(
+      annotations = list(x = 1, y = 0, text = caption, 
+         showarrow = F, xref='paper', yref='paper', 
+         xanchor='right', yanchor='auto', xshift=0, yshift=-60,
+         font=list(color="#AAAAAA")),
+      margin = list(b=60))
+  
+  return(plt)
 })

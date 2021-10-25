@@ -7,8 +7,9 @@ deployShinyApp <- function() {
 
   # # Basically telling ShinyApps where to get creahia
   urls <- c(
-    "trafficonese/leaflet.extras2",
-    "energyandcleanair/creahelpers")
+    "hubert-thieriot/entsoeapi",
+    "energyandcleanair/creapower"
+    )
   remotes::install_github(urls, force=T, upgrade="never")
 
   try(dotenv::load_dot_env())
@@ -25,8 +26,8 @@ deployShinyApp <- function() {
   #                      forceUpdate = T)
 
   # # Deploy production
-  rsconnect::deployApp(".",
-                       appName="whoimpact",
+  rsconnect::deployApp("inst/shiny",
+                       appName="power",
                        account = Sys.getenv("SHINYAPP_ACCOUNT"),
                        forceUpdate = T)
 

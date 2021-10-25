@@ -15,10 +15,9 @@ tabPanel("Power generation",
              uiOutput("selectPlotType"),
              uiOutput("selectYears"),
              
-             
-             actionButton("power_refresh",
-                          "Refresh",
-                          class="btn-primary"),
+             # actionButton("power_refresh",
+             #              "Refresh",
+             #              class="btn-primary"),
 
              downloadButton(outputId="download_csv",
                             "Download (.csv)",

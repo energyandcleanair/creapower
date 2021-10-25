@@ -26,8 +26,12 @@ get_generation <- function(date_from,
   years <- seq(lubridate::year(date_from), lubridate::year(date_to))
   d <- lapply(data_source, function(ds){
     lapply(years, function(year){
-      data.download_cache(data_source=ds, year=year, force=F) %>%
-        readRDS()
+      f <- data.download_cache(data_source=ds, year=year, force=F)
+      if(file.size(f)>300){
+        return(readRDS(f))
+      }else{
+        return(tibble())
+      }
     })
   }) %>%
     do.call(bind_rows, .)

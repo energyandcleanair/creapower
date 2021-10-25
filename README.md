@@ -76,3 +76,28 @@ ggplot(gen_hourly) +
 ```
 ![Hourly generation data](doc/gen_hourly.jpg)
 
+```r
+# Renewable generation
+gen_ren <- creapower::get_generation(date_from="2018-01-01", iso2=c("US","EU","IN"), freq="month") %>%
+  filter(grepl('Hydro|Wind|Solar', source)) %>%
+  mutate(year=lubridate::year(date),
+         date0000=lubridate::`year<-`(date,2000)) %>%
+  tidyr::complete(year, date0000, tidyr::nesting(iso2, region, source, data_source),
+                  fill=list(output_mw=0))
+
+
+ggplot(gen_ren) +
+  geom_bar(aes(date0000, output_mw, fill=factor(year)),
+           stat="identity",
+           position="dodge") +
+  scale_fill_brewer(palette="Reds", name=NULL) +
+  scale_x_datetime(
+    labels = scales::date_format("%b"),
+    date_breaks="1 month",
+    name=NULL
+  ) +
+  theme_minimal() +
+  facet_wrap(~region)
+```
+![Hourly generation data](doc/gen_ren.jpg)
+

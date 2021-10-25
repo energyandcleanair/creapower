@@ -2,13 +2,23 @@ available_data_sources <- function(){
   c("entso", "eia", "posoco", "bmrs")
 }
 
+
+data_source_reference <- function(data_source){
+  list(
+    "entso"="ENTSO-E Transparency Platform",
+    "eia"="EIA",
+    "posoco"="POSOCO (from robbieandrew.github.io/india)",
+    "bmrs"="BMRS")[[data_source]]
+}
+
+
 available_iso2s <- function(){
   lapply(available_data_sources(), function(ds){
     get(sprintf("%s.iso2s",ds))() %>%
       tibble(iso2=.) %>%
       mutate(data_source=ds,
              region=countrycode::countrycode(iso2, "iso2c", "country.name",
-                                             custom_match=c("EU"="European Union")))
+                                             custom_match =c("EU"="European Union")))
   }) %>%
     do.call(bind_rows, .)
 }

@@ -87,6 +87,7 @@ power <- reactive({
   req(country, sources, frequency, years)
     
   # Get data
+  print("Getting power data")
   power <- creapower::get_generation(
     date_from=sprintf("%d-01-01", years[1]),
     date_to=sprintf("%d-12-31", years[2]),
@@ -94,9 +95,19 @@ power <- reactive({
     homogenise = T,
     freq = frequency
   )
+  print("Done")
   
   return(power)
   
+})
+
+
+caption <- reactive({
+  power <- power()
+  req(power)
+  
+  ds <- unique(power$data_source)
+  return(paste0("Source: ", data_source_reference(ds)))
 })
 
 
@@ -105,8 +116,9 @@ output$power_plot <- renderPlotly({
   plot_type <- input$plot_type
   sources <- input$sources
   power <- power()
+  caption <- caption()
 
-  req(power, plot_type, sources)
+  req(power, plot_type, sources, caption)
   
   power_sources <- power %>% filter(source %in% sources) %>%
     group_by(date, data_source, iso2, region) %>%
@@ -127,7 +139,12 @@ output$power_plot <- renderPlotly({
       layout(
         hovermode = "x unified",
         yaxis = list(title = 'Power generation (MW)'),
-        xaxis = list(title = '')
+        xaxis = list(title = ''),
+        annotations = 
+          list(x = 1, y = -0.06, text = caption, 
+               showarrow = F, xref='paper', yref='paper', 
+               xanchor='right', yanchor='auto', xshift=0, yshift=0,
+               font=list(color="#AAAAAA"))
       ))
   }
   
@@ -148,7 +165,12 @@ output$power_plot <- renderPlotly({
       layout(
         hovermode = "x unified",
         yaxis = list(title = 'Power generation (MW)'),
-        xaxis = list(title = '')
+        xaxis = list(title = ''),
+        annotations = 
+          list(x = 1, y = -0.06, text = caption, 
+               showarrow = F, xref='paper', yref='paper', 
+               xanchor='right', yanchor='auto', xshift=0, yshift=0,
+               font=list(color="#AAAAAA"))
       ))
   }
   
@@ -170,7 +192,12 @@ output$power_plot <- renderPlotly({
         hovermode = "x unified",
         yaxis = list(title = 'Share of power generation',
                      tickformat = '.0%'),
-        xaxis = list(title = '')
+        xaxis = list(title = ''),
+        annotations = 
+          list(x = 1, y = -0.06, text = caption, 
+               showarrow = F, xref='paper', yref='paper', 
+               xanchor='right', yanchor='auto', xshift=0, yshift=0,
+               font=list(color="#AAAAAA"))
       ))
   }
   
@@ -196,7 +223,12 @@ output$power_plot <- renderPlotly({
                hovermode = "x unified",
                yaxis = list(title = 'Power generation (MW)'),
                xaxis = list(title = '',
-                            dtick = "M1", tickformat="%b")
+                            dtick = "M1", tickformat="%b"),
+               annotations = 
+                 list(x = 1, y = -0.06, text = caption, 
+                      showarrow = F, xref='paper', yref='paper', 
+                      xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                      font=list(color="#AAAAAA"))
              ))
   }
 })

@@ -8,7 +8,8 @@ data_source_reference <- function(data_source){
     "entso"="ENTSO-E Transparency Platform",
     "eia"="EIA",
     "posoco"="POSOCO (from robbieandrew.github.io/india)",
-    "bmrs"="BMRS")[[data_source]]
+    "bmrs"="BMRS",
+    "japan"="Renewable Energy Institute (www.renewable-ei.org)")[[data_source]]
 }
 
 
@@ -26,6 +27,7 @@ available_iso2s <- function(){
 
 data.source_homogenising_greps <- function(){
   list(
+    "Thermal"= "^Thermal$",
     "Coal"= "Coal",
     "Fossil Gas"= "Fossil Gas|Natural Gas",
     # "Oil"= "Oil",
@@ -33,7 +35,6 @@ data.source_homogenising_greps <- function(){
     "Hydro"= "Hydro",
     "Wind"= "Wind",
     "Solar"= "Solar",
-    "Thermal"= "^Thermal$",
     # "Other Renewables"= "Geothermal|Renewable|Marine|Biomass",
     # "Other" = "Peat|^Other$|Waste"
     "Other"= "Geothermal|Renewable|Marine|Biomass|Peat|^Other$|Waste|Oil"

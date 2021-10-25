@@ -41,25 +41,3 @@ test_that("Power generation collection works", {
   }
 })
 
-
-plot_rasters <- function(rs,
-                         add_adm=T,
-                         adm_level=2){
-
-  if(is.list(rs)){
-    rs <- raster::stack(rs)
-  }
-
-  grid <- rs[[1]] %>% raster::raster()
-
-  adm <- creahelpers::get_adm(adm_level, res="low") %>%
-    creahelpers::cropProj(grid)
-
-
-  pl <- rasterVis::levelplot(rs) +
-    latticeExtra::layer(sp::sp.lines(adm, lwd=2, col='darkgray'),
-          data=list(adm=adm))
-
-  print(pl)
-  return(pl)
-}

@@ -36,6 +36,7 @@ test_that("Power generation collection works", {
     d.complete <- d %>%
       tidyr::complete(nesting(iso2, region, data_source, source), date,
                       fill=list(output_mw=0))
+    
     expect_equal(nrow(d.complete), nrow(d))
   }
 })

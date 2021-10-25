@@ -1,5 +1,5 @@
 available_data_sources <- function(){
-  c("entso", "eia", "posoco", "bmrs")
+  c("japan", "entso", "eia", "posoco", "bmrs")
 }
 
 
@@ -33,6 +33,7 @@ data.source_homogenising_greps <- function(){
     "Hydro"= "Hydro",
     "Wind"= "Wind",
     "Solar"= "Solar",
+    "Thermal"= "^Thermal$",
     # "Other Renewables"= "Geothermal|Renewable|Marine|Biomass",
     # "Other" = "Peat|^Other$|Waste"
     "Other"= "Geothermal|Renewable|Marine|Biomass|Peat|^Other$|Waste|Oil"

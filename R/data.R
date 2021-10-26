@@ -55,7 +55,7 @@ data.download_cache <- function(data_source, year, force=F, cache_folder="cache"
   
   dir.create(file.path(cache_folder, data_source), showWarnings = F, recursive = T)
   
-  if(is.null(freq) || grepl(freq, "hour", ignore.case = T)){
+  if(is.null(freq) || grepl("hour", freq, ignore.case = T)){
     file_base <- file.path(data_source, sprintf("gen_%d.RDS", year))
     file_cache <- file.path(cache_folder, file_base)  
   }else{

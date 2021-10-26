@@ -2,23 +2,61 @@
 
 
 # Event Observers --------------------------------------
+# observe({
+#   plot_type <- input$plot_type
+#   req(plot_type)
+# 
+#   to_disable_enable <- c("frequency")
+# 
+#   if(plot_type=="monthly_bar"){
+#     for(d in to_disable_enable) shinyjs::disable(d)
+#   }else{
+#     for(d in to_disable_enable) shinyjs::enable(d)
+#   }
+# })
+
+
+# Preset -> other select inputs
+observeEvent(input$preset,{
+  
+  preset <- input$preset
+  req(preset)
+  
+  if(preset=="custom"){
+    return(NULL)
+  }
+  
+  params <- preset_params[[preset]]
+  
+  updateSelectInput(session, "frequency",
+                    selected=params[["frequency"]])
+  
+  updateSelectInput(session, "sources",
+                    selected=params[["sources"]])
+  
+  updateSelectInput(session, "plot_type",
+                    selected=params[["plot_type"]])
+})
+
+
+# Other select inputs -> preset
 observe({
-  plot_type <- input$plot_type
-  req(plot_type)
-
-  to_disable_enable <- c("frequency")
-
-  if(plot_type=="monthly_bar"){
-    for(d in to_disable_enable) shinyjs::disable(d)
-  }else{
-    for(d in to_disable_enable) shinyjs::enable(d)
+  frequency <- input$frequency
+  preset <- isolate(input$preset)
+  req(frequency, preset)
+  
+  params <- preset_params[[preset]]
+  
+  if(
+    preset != "custom" &&
+    frequency != params[["frequency"]]
+  ){
+    updateSelectInput(session, "preset",
+                      selected="custom")
   }
 })
 
 
-observeEvent(input$dimension,{
-  print(input$dimension)
-})
 
 
 # Download Handlers ----------------------------------
@@ -36,8 +74,16 @@ output$download_csv <- downloadHandler(
 
 
 # Output Elements --------------------------------------
+output$selectPreset <- renderUI({
+  selectInput("preset", NULL,
+              multiple=F,
+              choices=presets,
+              selected="custom")
+})
+
+
 output$selectCountry <- renderUI({
-  selectInput("country", "Region",
+  selectInput("country", NULL,
               multiple=F,
               choices=countries,
               selected="EU")
@@ -89,7 +135,7 @@ power_raw <- reactive({
     date_to=sprintf("%d-12-31", years[2]),
     iso2 = country,
     homogenise = T,
-    freq = "hourly"
+    freq = "day"
   )
   print("Done")
   return(power)
@@ -132,8 +178,9 @@ output$power_plot <- renderPlotly({
   sources <- input$sources
   power <- power()
   caption <- caption()
+  frequency <- isolate(input$frequency)
 
-  req(power, plot_type, sources, caption)
+  req(power, plot_type, sources, caption, frequency)
   
   power_sources <- power %>% filter(source %in% sources) %>%
     group_by(date, data_source, iso2, region) %>%
@@ -198,17 +245,25 @@ output$power_plot <- renderPlotly({
         xaxis = list(title = ''))
   }
   
-  if(plot_type=="monthly_bar"){
+  if(plot_type=="bar"){
     
-    power_month <- power_sources %>%
+    power_deyeared <- power_sources %>%
       mutate(year=lubridate::year(date),
-             month0000 = lubridate::floor_date(lubridate::`year<-`(date, 2000), "month")) %>%
-      group_by(iso2, region, month0000, year) %>%
+             date2000 = lubridate::`year<-`(date, 2000)) %>%
+      group_by(iso2, region, date2000, year) %>%
       summarise(output_mw=mean(output_mw)) %>%
       ungroup()
     
-    plt <- plot_ly(power_month,
-                   x = ~month0000,
+    tickformat <- recode(frequency,
+                         "day"="%e %b",
+                         "week"= "%W",
+                         "month"="%b",
+                         "year"="%Y")
+    
+    dtick <- ifelse(frequency=="month", "M1", NA)
+    
+    plt <- plot_ly(power_deyeared,
+                   x = ~date2000,
                    y = ~output_mw,
                    color = ~factor(year),
                    customdata = ~year,
@@ -221,8 +276,8 @@ output$power_plot <- renderPlotly({
                hovermode = "x unified",
                yaxis = list(title = 'Power generation (MW)'),
                xaxis = list(title = '',
-                            dtick = "M1",
-                            tickformat="%b"))
+                            dtick = dtick,
+                            tickformat=tickformat))
   }
   
   plt <- plt %>%
@@ -231,7 +286,8 @@ output$power_plot <- renderPlotly({
          showarrow = F, xref='paper', yref='paper', 
          xanchor='right', yanchor='auto', xshift=0, yshift=-60,
          font=list(color="#AAAAAA")),
-      margin = list(b=60))
+      margin = list(b=60),
+      yaxis = list(fixedrange=T))
   
   return(plt)
 })

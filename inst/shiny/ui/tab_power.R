@@ -8,13 +8,19 @@ tabPanel("Power generation",
              shinyjs::useShinyjs(),
 
              # Baseline
-             # h4("Options"),
+             h4("Region"),
              uiOutput("selectCountry"),
+             
+             h4("Presets"),
+             uiOutput("selectPreset"),
+             
+             h4("Customise"),
              uiOutput("selectSources"),
              uiOutput("selectFrequency"),
              uiOutput("selectPlotType"),
              uiOutput("selectYears"),
              
+             h4("Download"),
              # actionButton("power_refresh",
              #              "Refresh",
              #              class="btn-primary"),

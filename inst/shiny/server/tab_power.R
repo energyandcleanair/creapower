@@ -49,8 +49,17 @@ observe({
                       selected="custom")
   }
 })
-
-
+ 
+# observe({
+#   # Remove plotly parameters
+#   url <- input$.shinyURL
+#   req(url)
+#   url_new <- gsub("&plotly[^&]*","", url)
+#   
+#   if(url != url_new){
+#     updateTextInput(session, ".shinyURL", value=url_new)
+#   }
+# })
 
 
 # Download Handlers ----------------------------------

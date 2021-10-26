@@ -62,7 +62,6 @@ entso.collect_generation <- function(date_from, date_to=lubridate::today(tzone="
             }, error=function(e){return(tibble())}) # Error happens when no selected date has data
           }
         ) %>% do.call(bind_rows, .)
-      
       print(sprintf("%d unique dates found", length(unique(gen$dt))))
       return(gen)
     }, error=function(e){

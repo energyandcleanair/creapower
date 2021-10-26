@@ -54,10 +54,12 @@ entso.collect_generation <- function(date_from, date_to=lubridate::today(tzone="
       gen <- split(dates, seq(1, length(dates)) %/% n_chunk) %>%
         pbapply::pblapply(
           function(dates){
-            entsoeapi::en_generation_agg_gen_per_type(eic=eic,
-                                                      period_start=as.POSIXct(min(dates)),
-                                                      period_end=as.POSIXct(max(dates)),
-                                                      security_token=entso.get_entso_token())  
+            tryCatch({
+              entsoeapi::en_generation_agg_gen_per_type(eic=eic,
+                                                        period_start=as.POSIXct(min(dates)),
+                                                        period_end=as.POSIXct(max(dates)),
+                                                        security_token=entso.get_entso_token())    
+            }, error=function(e){return(tibble())}) # Error happens when no selected date has data
           }
         ) %>% do.call(bind_rows, .)
       

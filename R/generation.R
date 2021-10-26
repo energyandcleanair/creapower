@@ -122,7 +122,8 @@ update_generation <- function(data_source,
     }, error=function(e){})
   }
   
-  date_to <- as.POSIXct(paste0(year,"-12-31"), tz="UTC")
+  date_to <- min(as.POSIXct(paste0(year,"-12-31"), tz="UTC"),
+                 as.POSIXct(lubridate::today() + 2, tz="UTC"))
   d_new <- collect_generation(data_source=data_source,
                               date_from=date_from,
                               date_to=date_to)

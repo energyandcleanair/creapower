@@ -202,9 +202,10 @@ output$power_plot <- renderPlotly({
     
     power_month <- power_sources %>%
       mutate(year=lubridate::year(date),
-             month0000 = lubridate::floor_date(lubridate::`year<-`(date,0), "month")) %>%
+             month0000 = lubridate::floor_date(lubridate::`year<-`(date, 2000), "month")) %>%
       group_by(iso2, region, month0000, year) %>%
-      summarise(output_mw=mean(output_mw))
+      summarise(output_mw=mean(output_mw)) %>%
+      ungroup()
     
     plt <- plot_ly(power_month,
                    x = ~month0000,
@@ -220,7 +221,8 @@ output$power_plot <- renderPlotly({
                hovermode = "x unified",
                yaxis = list(title = 'Power generation (MW)'),
                xaxis = list(title = '',
-                            dtick = "M1", tickformat="%b"))
+                            dtick = "M1",
+                            tickformat="%b"))
   }
   
   plt <- plt %>%

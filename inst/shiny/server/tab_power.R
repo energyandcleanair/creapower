@@ -2,19 +2,6 @@
 
 
 # Event Observers --------------------------------------
-# observe({
-#   plot_type <- input$plot_type
-#   req(plot_type)
-# 
-#   to_disable_enable <- c("frequency")
-# 
-#   if(plot_type=="monthly_bar"){
-#     for(d in to_disable_enable) shinyjs::disable(d)
-#   }else{
-#     for(d in to_disable_enable) shinyjs::enable(d)
-#   }
-# })
-
 
 # Preset -> other select inputs
 observeEvent(input$preset,{
@@ -42,14 +29,21 @@ observeEvent(input$preset,{
 # Other select inputs -> preset
 observe({
   frequency <- input$frequency
+  sources <- input$sources
+  plot_type <- input$plot_type
+  
   preset <- isolate(input$preset)
-  req(frequency, preset)
+  req(frequency, preset, sources, plot_type)
   
   params <- preset_params[[preset]]
   
   if(
     preset != "custom" &&
-    frequency != params[["frequency"]]
+    (
+      frequency != params[["frequency"]] ||
+      sort(sources) != sort(params[["sources"]]) ||
+      plot_type != params[["plot_type"]]
+    )
   ){
     updateSelectInput(session, "preset",
                       selected="custom")
@@ -62,7 +56,7 @@ observe({
 # Download Handlers ----------------------------------
 
 # Downloadable csv of selected dataset
-output$download_csv <- downloadHandler(
+output$downloadCsv <- downloadHandler(
   filename = function() {
     paste("power.csv", sep = "")
   },
@@ -71,6 +65,9 @@ output$download_csv <- downloadHandler(
   }
 )
 
+output$buttonClip <- renderUI({
+  rclipButton("clipbtn", " Copy URL", input$.shinyURL, icon("copy"))
+})
 
 
 # Output Elements --------------------------------------
@@ -109,13 +106,21 @@ output$selectPlotType <- renderUI({
   selectInput("plot_type", "Plot Type", multiple=F, choices = plot_types, selected="area")
 })
 
-
-output$selectYears <- renderUI({
-  sliderTextInput("years", "Years",
-    choices = seq(2016, lubridate::year(lubridate::today())),
-    selected = c(2020, 2021)
-  )
+output$selectYearFrom <- renderUI({
+  selectInput("year_from", "From", multiple=F,
+              choices = seq(2016, lubridate::year(lubridate::today())), selected="2018")
 })
+ 
+output$selectYearTo <- renderUI({
+  selectInput("year_to", "To", multiple=F,
+              choices = seq(2016, lubridate::year(lubridate::today())), selected="2021")
+})
+# output$selectYears <- renderUI({
+#   sliderTextInput("years", "Years",
+#     choices = seq(2016, lubridate::year(lubridate::today())),
+#     selected = c(2020, 2021)
+#   )
+# })
 
 
 # Reactive Elements --------------------------------------
@@ -125,14 +130,15 @@ power_raw <- reactive({
   # To trigger refresh
   # input$power_refresh
   country <- input$country
-  years <- input$years
-  req(country, years)
+  year_from <- input$year_from
+  year_to <- input$year_to
+  req(country, year_from, year_to)
     
   # Get data
   print("Getting power data")
   power <- creapower::get_generation(
-    date_from=sprintf("%d-01-01", years[1]),
-    date_to=sprintf("%d-12-31", years[2]),
+    date_from=sprintf("%s-01-01", year_from),
+    date_to=sprintf("%s-12-31", year_to),
     iso2 = country,
     homogenise = T,
     freq = "day"
@@ -168,7 +174,9 @@ caption <- reactive({
   req(power)
   
   ds <- unique(power$data_source)
-  return(paste0("Source: ", data_source_reference(ds)))
+  ref <- paste0("Source: ", data_source_reference(ds),". ")
+  update <- paste0("Updated on ", strftime(max(power$date), "%d %B %Y."))
+  return(paste0(ref, update))
 })
 
 

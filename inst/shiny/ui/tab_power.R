@@ -18,16 +18,23 @@ tabPanel("Power generation",
              uiOutput("selectSources"),
              uiOutput("selectFrequency"),
              uiOutput("selectPlotType"),
-             uiOutput("selectYears"),
+             
+             div(
+               class="row-inline",
+               height=50,
+               uiOutput("selectYearFrom"),
+               uiOutput("selectYearTo")
+             ),
+             
+             
              
              h4("Download"),
-             # actionButton("power_refresh",
-             #              "Refresh",
-             #              class="btn-primary"),
-
-             downloadButton(outputId="download_csv",
+             downloadButton(outputId="downloadCsv",
                             "Download (.csv)",
-                            class="btn-secondary")
+                            class="btn-secondary"),
+             h4("Share"),
+             shinyURL.ui(label = NULL, copyURL=F, tinyURL=F),
+             uiOutput("buttonClip")
            ),
            
            mainPanel(

@@ -3,6 +3,7 @@ library(shinyWidgets)
 library(shinycssloaders)
 library(countrycode)
 library(dplyr)
+library(shinyURL)
 
 Sys.setenv("GCS_DEFAULT_BUCKET"=Sys.getenv("GCS_DEFAULT_BUCKET", "crea-public"))
 library(googleCloudStorageR)

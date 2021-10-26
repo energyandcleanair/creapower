@@ -17,7 +17,10 @@ Imports:
     eia,
     entsoeapi,
     countrycode,
-    jsonlite
+    jsonlite,
+    shinyURL,
+    rclipboard
 Remotes:
-    hubert-thieriot/entsoeapi
+    hubert-thieriot/entsoeapi,
+    aoles/shinyURL
 RoxygenNote: 7.1.1

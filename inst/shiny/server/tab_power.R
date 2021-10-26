@@ -107,7 +107,7 @@ output$selectSources <- renderUI({
 
 
 output$selectFrequency <- renderUI({
-  selectInput("frequency", "Frequency", multiple=F, choices = frequency, selected="day")
+  selectInput("frequency", "Frequency", multiple=F, choices = frequency, selected="week")
 })
 
 

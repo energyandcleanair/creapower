@@ -137,7 +137,7 @@ entso.get_capacity <- function(
   }
   
   
-  # Update cache from EIA
+  # Update cache from ENTSO
   pbapply::pblapply(iso2, function(iso2){
     lapply(years, function(year){entso.update_capacity(iso2=iso2, year=year)})
   })

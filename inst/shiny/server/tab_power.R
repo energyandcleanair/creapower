@@ -184,7 +184,7 @@ caption <- reactive({
   
   ds <- unique(power$data_source)
   ref <- paste0("Source: ", data_source_reference(ds),". ")
-  update <- paste0("Updated on ", strftime(max(power$date), "%d %B %Y."))
+  update <- paste0("Last updated on ", strftime(max(power$date), "%d %B %Y."))
   return(paste0(ref, update))
 })
 

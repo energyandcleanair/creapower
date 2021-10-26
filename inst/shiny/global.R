@@ -29,8 +29,9 @@ plot_types <- c("Area" = "area",
                 "Bars" = "bar")
 
 
-presets <- c("Wind & solar contribution" = "windsolarmonth",
-             "Custom" = "custom")
+presets <- c(
+  "Custom" = "custom",
+  "Wind & solar contribution" = "windsolarmonth")
 
 preset_params <- list(
   "windsolarmonth" = list(

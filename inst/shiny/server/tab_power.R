@@ -179,7 +179,7 @@ power <- reactive({
 
 
 caption <- reactive({
-  power <- power()
+  power <- power_raw()
   req(power)
   
   ds <- unique(power$data_source)

@@ -51,11 +51,17 @@ data.source_homogenising_greps <- function(){
 #' @export
 #'
 #' @examples
-data.download_cache <- function(data_source, year, force=F, cache_folder="cache"){
+data.download_cache <- function(data_source, year, force=F, cache_folder="cache", freq=NULL){
   
   dir.create(file.path(cache_folder, data_source), showWarnings = F, recursive = T)
-  file_base <- file.path(data_source, sprintf("gen_%d.RDS", year))
-  file_cache <- file.path(cache_folder, file_base)
+  
+  if(is.null(freq) || grepl(freq, "hour", ignore.case = T)){
+    file_base <- file.path(data_source, sprintf("gen_%d.RDS", year))
+    file_cache <- file.path(cache_folder, file_base)  
+  }else{
+    file_base <- file.path(data_source, sprintf("gen_daily_%d.RDS", year))
+    file_cache <- file.path(cache_folder, file_base)  
+  }
   
   download <- force || !file.exists(file_cache)
     # (gcs.modification_date(file_base) > file.info(file_cache)$mtime) # gcs.modification_date doesn't work for unauthenticated

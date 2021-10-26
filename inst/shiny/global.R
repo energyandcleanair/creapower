@@ -23,4 +23,4 @@ plot_types <- c("Area" = "area",
                 "Monthly bars" = "monthly_bar")
 
 # Download cache for latest year
-lapply(data_sources, function(ds) creapower::data.download_cache(ds, lubridate::year(lubridate::today())))
+lapply(data_sources, function(ds) creapower::data.download_cache(ds, lubridate::year(lubridate::today()), freq="day"))

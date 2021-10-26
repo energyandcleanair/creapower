@@ -24,9 +24,10 @@ get_generation <- function(date_from,
   }
   
   years <- seq(lubridate::year(date_from), lubridate::year(date_to))
+
   d <- lapply(data_source, function(ds){
     lapply(years, function(year){
-      f <- data.download_cache(data_source=ds, year=year, force=F)
+      f <- data.download_cache(data_source=ds, year=year, force=F, freq=freq)
       if(file.size(f)>300){
         return(readRDS(f))
       }else{
@@ -103,6 +104,10 @@ update_generation <- function(data_source,
   file_base <- sprintf("%s/gen_%d.RDS", data_source, year)
   file_cache <- file.path(cache_folder, file_base)
   
+  # Creating a daily version for faster loading in online platform
+  file_base_daily <- sprintf("%s/gen_daily_%d.RDS", data_source, year)
+  file_cache_daily <- file.path(cache_folder, file_base_daily)
+  
   if(download_from_gcs){
     gcs.download(source_path=file_base, dest_path=file_cache)  
   }
@@ -127,6 +132,18 @@ update_generation <- function(data_source,
   
   if(upload_to_gcs){
     gcs.upload(source_path=file_cache, dest_path=file_base)
+  }
+  
+  # Updating daily version as well
+  d_daily <- d %>%
+    mutate(date=lubridate::floor_date(date, unit="day")) %>%
+    group_by(across(c(-output_mw))) %>%
+    summarise_at("output_mw", mean) %>%
+    ungroup()
+  saveRDS(d_daily, file_cache_daily)
+  
+  if(upload_to_gcs){
+    gcs.upload(source_path=file_cache_daily, dest_path=file_base_daily)
   }
   
   return(d)

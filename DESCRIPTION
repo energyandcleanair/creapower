@@ -19,7 +19,8 @@ Imports:
     countrycode,
     jsonlite,
     shinyURL,
-    rclipboard
+    rclipboard,
+	rio
 Remotes:
     hubert-thieriot/entsoeapi,
     aoles/shinyURL

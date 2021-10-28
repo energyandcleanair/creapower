@@ -33,6 +33,7 @@ importFrom(dplyr,summarise_all)
 importFrom(dplyr,tibble)
 importFrom(dplyr,ungroup)
 importFrom(dplyr,vars)
+importFrom(dplyr,"%>%")
 
 importFrom(lubridate,"hour<-")
 importFrom(lubridate,day)

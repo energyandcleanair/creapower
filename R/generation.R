@@ -88,8 +88,10 @@ data_source_iso2s <- function(data_source){
   get(sprintf("%s.iso2s", data_source))()
 }
 
+
 update_generation <- function(data_source,
                               year=lubridate::year(lubridate::today()),
+                              use_cache=T,
                               download_from_gcs=T,
                               upload_to_gcs=T,
                               cache_folder="cache"){
@@ -108,25 +110,27 @@ update_generation <- function(data_source,
   file_base_daily <- sprintf("%s/gen_daily_%d.RDS", data_source, year)
   file_cache_daily <- file.path(cache_folder, file_base_daily)
   
-  if(download_from_gcs){
+  if(use_cache & download_from_gcs){
     gcs.download(source_path=file_base, dest_path=file_cache)  
   }
   
   d_cache <- tibble::tibble()
-  date_from <- as.POSIXct(paste0(year,"-01-01"), tz="UTC")
+  date_from <- as.POSIXct(paste0(year-1,"-12-30"), tz="UTC")
   
-  if(file.exists(file_cache) && file.size(file_cache) > 300){ # case when gcs.download file failed
+  if(use_cache && file.exists(file_cache) && file.size(file_cache) > 300){ # case when gcs.download file failed
     tryCatch({
       d_cache <- readRDS(file_cache)
       date_from <- max(d_cache$date)-lubridate::days(2)  
     }, error=function(e){})
   }
   
-  date_to <- min(as.POSIXct(paste0(year,"-12-31"), tz="UTC"),
+  date_to <- min(as.POSIXct(paste0(year+1,"-01-02"), tz="UTC"),
                  as.POSIXct(lubridate::today() + 2, tz="UTC"))
+  
   d_new <- collect_generation(data_source=data_source,
                               date_from=date_from,
-                              date_to=date_to)
+                              date_to=date_to) %>%
+    filter(lubridate::year(date)==year)
   
   d <- combine_generation_cache_and_new(d_cache, d_new)
   saveRDS(d, file_cache)
@@ -165,7 +169,7 @@ homogenise_generation <- function(gen, do_factor=T){
   
   d <- lapply(names(source_greps),function(s){
     gen %>% filter(grepl(source_greps[[s]], source, ignore.case = T)) %>%
-      group_by(iso2, region, date, data_source) %>%
+      group_by(across(c(-output_mw))) %>%
       summarise_at(c('output_mw'), sum, na.rm=T) %>%
       mutate(source = s)
   }) %>%

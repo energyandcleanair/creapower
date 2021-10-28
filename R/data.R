@@ -28,7 +28,7 @@ available_iso2s <- function(){
 data.source_homogenising_greps <- function(){
   list(
     "Thermal"= "^Thermal$",
-    "Coal"= "Coal",
+    "Coal"= "Coal|Lignite",
     "Fossil Gas"= "Fossil Gas|Natural Gas",
     # "Oil"= "Oil",
     "Nuclear"= "Nuclear",
@@ -37,7 +37,7 @@ data.source_homogenising_greps <- function(){
     "Solar"= "Solar",
     # "Other Renewables"= "Geothermal|Renewable|Marine|Biomass",
     # "Other" = "Peat|^Other$|Waste"
-    "Other"= "Geothermal|Renewable|Marine|Biomass|Peat|^Other$|Waste|Oil"
+    "Other"= "Geothermal|Renewable|Marine|Biomass|Peat|^Other$|Waste|Oil|Diesel"
   )
 }
 

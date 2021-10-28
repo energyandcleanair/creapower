@@ -49,7 +49,21 @@ observe({
                       selected="custom")
   }
 })
- 
+
+# Only show relevant sources 
+observe({
+  power_raw <- power_raw()
+  req(power_raw)
+  
+  # sources <- unique(power_raw$source)
+  sources <- as.character(unique(power_raw$source))
+  updatePickerInput(session, "sources",
+                    choices=sources,
+                    selected=sources
+                    )
+})
+
+
 # observe({
 #   # Remove plotly parameters
 #   url <- input$.shinyURL

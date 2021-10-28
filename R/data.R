@@ -1,5 +1,5 @@
 available_data_sources <- function(){
-  c("japan", "entso", "eia", "posoco", "bmrs")
+  c("japan", "entso", "eia", "posoco", "bmrs", "thailand")
 }
 
 

@@ -20,7 +20,7 @@ Imports:
     jsonlite,
     shinyURL,
     rclipboard,
-	rio
+    rio
 Remotes:
     hubert-thieriot/entsoeapi,
     aoles/shinyURL

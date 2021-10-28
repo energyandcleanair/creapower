@@ -10,7 +10,12 @@ test_that("Source homogenisation doesn't lead to double counting", {
   
   for(data_source in data_sources){
     print(data_source)
+    
     gen <- get_generation(data_source=data_source, date_from=date_from)
+    while(nrow(gen)==0){
+      date_from <- date_from - 31
+      gen <- get_generation(data_source=data_source, date_from=date_from)
+    }
     
     gen_agg <- homogenise_generation(gen)
     

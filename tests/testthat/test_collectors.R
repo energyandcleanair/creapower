@@ -21,7 +21,7 @@ test_that("Power generation collection works", {
     expect_false(is.grouped_df(d))
     
     # Dates should match
-    expect_true(min(d$date) == date_from)
+    expect_true(min(d$date) >= date_from)
     
     # data_source should match
     expect_true(unique(d$data_source) == data_source)
@@ -44,6 +44,12 @@ test_that("Power generation collection works", {
       xor(any(grepl("Thermal", unique(d_homogenised$source), ignore.case = T)),
         any(grepl("Coal|Gas|Oil", unique(d_homogenised$source), ignore.case = T))
         ))
+
+    # Either Renewables or Wind & Solar separately
+    expect_true(
+      xor(any(grepl("^Renewables$|^Renewable$", unique(d_homogenised$source), ignore.case = T)),
+          any(grepl("Wind|Solar", unique(d_homogenised$source), ignore.case = T))
+      ))
     
     compare <- d %>%
       group_by(iso2, region, data_source, date) %>%

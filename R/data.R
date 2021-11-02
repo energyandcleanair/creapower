@@ -9,7 +9,8 @@ data_source_reference <- function(data_source){
     "eia"="EIA",
     "posoco"="POSOCO (from robbieandrew.github.io/india)",
     "bmrs"="BMRS",
-    "japan"="Renewable Energy Institute (www.renewable-ei.org)")[[data_source]]
+    "japan"="Renewable Energy Institute (www.renewable-ei.org)",
+    "thailand"="Ministry of Energy")[[data_source]]
 }
 
 

@@ -35,9 +35,10 @@ data.source_homogenising_greps <- function(){
     "Hydro"= "Hydro",
     "Wind"= "Wind",
     "Solar"= "Solar",
+    "Renewables" = "^Renewables$|^Renewable$",
     # "Other Renewables"= "Geothermal|Renewable|Marine|Biomass",
     # "Other" = "Peat|^Other$|Waste"
-    "Other"= "Geothermal|Renewable|Marine|Biomass|Peat|^Other$|Waste|Oil|Diesel"
+    "Other"= "Geothermal|Other Renewable|Marine|Biomass|Peat|^Other$|Waste|Oil|Diesel"
   )
 }
 

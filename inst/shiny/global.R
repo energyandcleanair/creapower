@@ -38,7 +38,7 @@ presets <- c(
 preset_params <- list(
   "windsolarmonth" = list(
     "frequency"="month",
-    "sources"=c("Wind","Solar"),
+    "sources"=c("Wind","Solar","Renewables"), #Renewable and Wind|Solar are exclusive
     "plot_type"="bar"
     # "date_from"="2016-01-01",
     # "date_to"=lubridate::today()

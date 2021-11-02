@@ -18,7 +18,13 @@ vietnam.collect_generation <- function(date_from, date_to=lubridate::today(tzone
   lapply(dates, function(date){
     url <- sprintf('https://www.nldc.evn.vn/Chart24hHandle.ashx?d=%s&isChangeDate=0', 
                    format(date, '%d/%m/%Y'))
-    d <- jsonlite::fromJSON(url)
+    d <- NULL
+    attempt <- 1
+    while(is.null(d) && attempt <=3){
+      try(
+        d <- jsonlite::fromJSON(url)
+      )
+    }
     gen <- data.frame(d$data)[1,] %>% 
       pivot_longer(1:48, names_to = 'remove', values_to = 'output_mw') %>% 
       select(!remove) %>%

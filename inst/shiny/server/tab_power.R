@@ -282,7 +282,7 @@ output$power_plot <- renderPlotly({
       mutate(year=lubridate::year(date),
              date2000 = lubridate::`year<-`(date, 2000)) %>%
       group_by(iso2, region, date2000, year) %>%
-      summarise(output_mw=mean(output_mw)) %>%
+      summarise(output_mw=sum(output_mw)) %>%
       ungroup()
     
     tickformat <- recode(frequency,

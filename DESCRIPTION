@@ -20,7 +20,8 @@ Imports:
     jsonlite,
     shinyURL,
     rclipboard,
-    rio
+    rio,
+    magrittr
 Remotes:
     hubert-thieriot/entsoeapi,
     aoles/shinyURL

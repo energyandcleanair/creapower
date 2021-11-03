@@ -42,3 +42,31 @@ test_that("Power generation data makes sense", {
   
   
 })
+
+test_that("[CHINA] Power generation data makes sense", {
+  
+  gen_raw <- get_generation("wind", date_from="2020-01-01", date_to="2020-12-31")
+  
+  gen <- gen_raw %>%
+    filter(!is.na(iso2)) %>%
+    group_by(iso2, source, year=lubridate::year(date)) %>%
+    mutate(output_mwh=output_mw * duration_hours) %>%
+    summarise(output_twh=sum(output_mwh)/1e6)
+  
+  
+  # Comparing with CEC data
+  # Specifically, power generation from hydro, thermal, nuclear, grid-connected wind and solar sources
+  # reached 1,360TWh, 5,170TWh, 366.2TWh, 466.5TWh and 261.1TWh
+  # https://english.cec.org.cn/detail/index.html?3-1128#:~:text=In%202020%2C%20China%20power%20generation,16.6%25%20year%20on%20year%20respectively.
+  cec <- list(
+    Hydro=1360,
+    Thermal=5170,
+    Nuclear=366.2,
+    Wind=466.5,
+    Solar=261.1)
+
+  compare <- gen %>% 
+    mutate(output_twh_cec=recode(source, !!!cec),
+           diff_rel = (output_twh_cec-output_twh)/output_twh_cec)
+  
+})

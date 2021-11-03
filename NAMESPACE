@@ -43,5 +43,9 @@ importFrom(lubridate,year)
 importFrom(lubridate,ymd)
 importFrom(lubridate,ymd_h)
 
+importFrom(magrittr,"%<>%")
+importFrom(magrittr,add)
+
 importFrom(tidyr, nesting)
 importFrom(tidyr, pivot_longer)
+importFrom(tidyr, separate)

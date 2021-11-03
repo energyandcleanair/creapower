@@ -17,7 +17,7 @@ vietnam.collect_generation <- function(date_from, date_to=lubridate::today(tzone
   
   lapply(dates, function(date){
     url <- sprintf('https://www.nldc.evn.vn/Chart24hHandle.ashx?d=%s&isChangeDate=0', 
-                   format(date, '%d/%m/%Y'))
+                   strftime(date, '%d/%m/%Y'))
     d <- NULL
     attempt <- 1
     while(is.null(d) && attempt <=3){
@@ -31,8 +31,11 @@ vietnam.collect_generation <- function(date_from, date_to=lubridate::today(tzone
       mutate(date = seq(lubridate::ymd_hms(paste(date, '00:00:00'), tz='Asia/Saigon'), 
                         lubridate::ymd_hms(paste(date, '23:30:00'), tz='Asia/Saigon'), 
                         by = '30 min'),
-             iso2 = 'VN', region = 'Vietnam', data_source = 'vietnam', source = 'All',
-             duration_hours = 0.5)
+             iso2 = 'VN', region = 'Vietnam', data_source = 'vietnam', source = 'Total') %>%
+      mutate(date=lubridate::floor_date(date, "hour")) %>%
+      group_by(across(-c(output_mw))) %>%
+      summarise(output_mw=mean(output_mw)) %>%
+      mutate(duration_hours=1)
   }) %>%
     do.call(bind_rows, .) %>%
     filter(date >= date_from, date < date_to) %>%

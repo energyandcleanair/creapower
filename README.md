@@ -5,16 +5,18 @@
 <!-- badges: end -->
 
 `creapower` is a R package dedicated to **retrieving power generation data** from various sources, namely:
-- EIA
-- ENTSO-E
+- EIA (USA)
+- ENTSO-E (Europe)
 - POSOCO (through [Robbie Andrew's](https://robbieandrew.github.io/india/) repository)
+- Renewable-ei.org (Japan)
+- Ministry of Energy (Thailand)
 
 
 Data is regularly updated and cached on CREA Google Bucket. Hence, this package does not require user to own api keys or security tokens for any of the various sources.
 
 ## Installation
 
-You can install the released version of creapower from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of `creapower` from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
 library(remotes)

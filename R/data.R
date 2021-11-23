@@ -1,5 +1,5 @@
 available_data_sources <- function(){
-  c("japan", "entso", "eia", "posoco", "bmrs", "thailand")
+  c("japan", "entso", "eia", "posoco", "bmrs", "thailand", "wind")
 }
 
 
@@ -10,7 +10,9 @@ data_source_reference <- function(data_source){
     "posoco"="POSOCO (from robbieandrew.github.io/india)",
     "bmrs"="BMRS",
     "japan"="Renewable Energy Institute (www.renewable-ei.org)",
-    "thailand"="Ministry of Energy")[[data_source]]
+    "thailand"="Ministry of Energy",
+    "vietnam"="National Load Dispatch Centre",
+    "wind"="Wind")[[data_source]]
 }
 
 

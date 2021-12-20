@@ -16,10 +16,10 @@ skorea.collect_generation <- function(date_from, date_to=lubridate::today(tzone=
   
   data <- read.csv(url)
   
-  data %>% rename(Oil = Diesel, Renewables = Renewable) %>%
+  data %>% rename(Oil = Diesel, Renewables = Renewable, 'Fossil Gas' = Gas) %>%
     mutate(Coal = Hard.coal + Bituminous.coal, 
            date = strptime(paste("01", Month, Year), "%d %b %Y")) %>%
-    select(date, Hydro, Coal, Oil, Gas, Composite, Nuclear, Renewables) %>%
+    select(date, Hydro, Coal, Oil, 'Fossil Gas', Composite, Nuclear, Renewables) %>%
     pivot_longer(-date, names_to = 'source', values_to = 'output_gwh') %>%
     mutate(duration_hours = lubridate::days_in_month(date)*24, 
            output_mw = output_gwh*1000 / duration_hours,

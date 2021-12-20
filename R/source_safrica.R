@@ -2,7 +2,7 @@ safrica.iso2s <- function(){
   'ZA'
 }
 
-#' Collect generation data from Turkis Electricity Transmission Corporation (TEIAS)
+#' Collect generation data from Eskom
 #'
 #' @param date_from 
 #'

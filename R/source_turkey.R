@@ -2,7 +2,7 @@ turkey.iso2s <- function(){
   'TR'
 }
 
-#' Collect generation data from Turkis Electricity Transmission Corporation (TEIAS)
+#' Collect generation data from Turkish Electricity Transmission Corporation (TEIAS)
 #'
 #' @param date_from 
 #'
@@ -16,10 +16,10 @@ turkey.collect_generation <- function(date_from, date_to=lubridate::today(tzone=
   
   data <- read.csv(url)
   
-  data %>% rename(Coal = Total, Oil = Total.1, Gas = Natural.Gas, Waste = Renew.and.Wastes,
+  data %>% rename(Coal = Total, Oil = Total.1, 'Fossil Gas' = Natural.Gas, Waste = Renew.and.Wastes,
                   Hydro = HYDRO, Geothermal = GEOTHERMAL, Wind = WIND, Solar = SOLAR) %>%
     mutate(date = strptime(paste("01", Month, Year), "%d %b %Y")) %>%
-    select(date, Hydro, Coal, Oil, Gas, Waste, Geothermal, Wind, Solar) %>%
+    select(date, Hydro, Coal, Oil, 'Fossil Gas', Waste, Geothermal, Wind, Solar) %>%
     pivot_longer(-date, names_to = 'source', values_to = 'output_gwh') %>%
     mutate(duration_hours = lubridate::days_in_month(date)*24, 
            output_mw = output_gwh*1000 / duration_hours,

@@ -1,5 +1,6 @@
 available_data_sources <- function(){
-  c("japan", "entso", "eia", "posoco", "bmrs", "thailand", "wind")
+  c("japan", "entso", "eia", "posoco", "bmrs", "thailand", "wind", "turkey", 
+    "south africa", "south korea")
 }
 
 
@@ -12,6 +13,9 @@ data_source_reference <- function(data_source){
     "japan"="Renewable Energy Institute (www.renewable-ei.org)",
     "thailand"="Ministry of Energy",
     "vietnam"="National Load Dispatch Centre",
+    "south korea"="Korea Electric Power Corporation (KEPCO)",
+    "south africa"="Eskom",
+    "turkey"="Turkish Electricity Transmission Corporation (TEIAS)"
     "wind"="Wind")[[data_source]]
 }
 

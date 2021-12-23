@@ -15,7 +15,7 @@ data_source_reference <- function(data_source){
     "vietnam"="National Load Dispatch Centre",
     "south korea"="Korea Electric Power Corporation (KEPCO)",
     "south africa"="Eskom",
-    "turkey"="Turkish Electricity Transmission Corporation (TEIAS)"
+    "turkey"="Turkish Electricity Transmission Corporation (TEIAS)",
     "wind"="Wind")[[data_source]]
 }
 

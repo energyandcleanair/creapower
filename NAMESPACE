@@ -1,5 +1,6 @@
 exportPattern("^[[:alpha:]]+")
 
+importFrom(countrycode,countrycode)
 
 importFrom(dplyr,all_vars)
 importFrom(dplyr,any_vars)
@@ -24,6 +25,7 @@ importFrom(dplyr,mutate_at)
 importFrom(dplyr,mutate_if)
 importFrom(dplyr,n)
 importFrom(dplyr,pull)
+importFrom(dplyr,recode)
 importFrom(dplyr,rename)
 importFrom(dplyr,rowwise)
 importFrom(dplyr,select)
@@ -48,10 +50,12 @@ importFrom(lubridate,ymd_h)
 importFrom(magrittr,"%<>%")
 importFrom(magrittr,add)
 
-importFrom(tidyr, nesting)
-importFrom(tidyr, pivot_longer)
-importFrom(tidyr, separate)
-importFrom(tidyr, gather)
+importFrom(readr,read_csv)
+importFrom(readr,cols)
+
+importFrom(tidyr,nesting)
+importFrom(tidyr,pivot_longer)
+importFrom(tidyr,separate)
+importFrom(tidyr,gather)
 
 
-importFrom(readr, read_csv)

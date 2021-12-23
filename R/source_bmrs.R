@@ -24,7 +24,7 @@ bmrs.collect_generation <- function(date_from, date_to=lubridate::today(tzone="U
                    bmrs.get_bmrs_key(), date)
     tryCatch({
         suppressWarnings(
-          read_csv(url, skip=4, col_types = cols()) %>%
+          read_csv(url, skip=4, col_types = readr::cols()) %>%
             select(source=`Power System Resource  Type`,
                    Quantity,
                    period=`Settlement Period`

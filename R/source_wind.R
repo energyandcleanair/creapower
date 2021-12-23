@@ -36,7 +36,7 @@ wind.read_spreadsheet <- function(){
   colNames <- c('var', 'source', 'province')
   columnFilter <- c('^Output')
   
-  data <- read_csv(url, col_names = F)
+  data <- read_csv(url, col_names = F, col_types = readr::cols())
   data[1,] %>% unlist -> h
   
   if(any(grepl('YTD', h))) colNames %<>% c('type') %>% unique
@@ -146,16 +146,23 @@ wind.unYTD <- function(df) {
         
         # Equation
         # g^2 * h * dh3 + g * ((h-i)*dh2) + (h-i)*dh1 = 0
-        g <- polyroot(cbind((h-i)*dh1, ((h-i)*dh2), h*dh3)) %>% Re() %>% max()
+        gs <- polyroot(cbind((h-i)*dh1, ((h-i)*dh2), h*dh3)) %>% Re()
         
-        # a*dh1 + a*g*dh2=h
-        a = h/(dh1+dh2*g)
-        b = a * g
-        
-        assertthat::are_equal(a*dh1 + b*dh2, h)
-        
-        df$value1m[ind-1] <- a * dh1
-        df$value1m[ind] <- b * dh2
+        if(all(is.na(gs))){
+          df$value1m[ind-1] <- NA
+          df$value1m[ind] <- NA
+        }else{
+          g <- max(gs)
+          
+          # a*dh1 + a*g*dh2=h
+          a = h/(dh1+dh2*g)
+          b = a * g
+          
+          assertthat::are_equal(a*dh1 + b*dh2, h)
+          
+          df$value1m[ind-1] <- a * dh1
+          df$value1m[ind] <- b * dh2  
+        }
       }
       
       return(df)

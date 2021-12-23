@@ -34,6 +34,7 @@ entso.iso2s <- function(){
 entso.collect_generation <- function(date_from, date_to=lubridate::today(tzone="UTC")+1, iso2s=NULL){
   
   print(paste0("Collecting ENTSO: ", date_from, " to ", date_to))
+  
   eics <- entsoeapi::en_eic() %>%
     filter(AreaTypeCode=="CTY") %>%
     filter(is.null(iso2s) | (MapCode %in% iso2s)) %>%
@@ -62,7 +63,13 @@ entso.collect_generation <- function(date_from, date_to=lubridate::today(tzone="
             }, error=function(e){return(tibble())}) # Error happens when no selected date has data
           }
         ) %>% do.call(bind_rows, .)
-      print(sprintf("%d unique dates found", length(unique(gen$dt))))
+      
+      if(nrow(gen)>0){
+        print(sprintf("%d unique dates found", length(unique(gen$dt))))  
+      }else{
+        print("No data collected")  
+      }
+      
       return(gen)
     }, error=function(e){
       warning("Failed to collect generation: ", eic, " :", e)

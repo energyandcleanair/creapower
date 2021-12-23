@@ -27,6 +27,7 @@ test_that("[ENTSO] Power generation data makes sense", {
                          "Lignite"="Coal")) %>%
     group_by(across(c(-output_twh))) %>%
     summarise_at("output_twh", sum) %>%
+    filter(!grepl("EU.?27", country_name)) %>%
     mutate(iso2=countrycode(country_name, "country.name", "iso2c"))
   
   
@@ -48,49 +49,18 @@ test_that("[ENTSO] Power generation data makes sense", {
 test_that("[Others] Power generation data makes sense", {
   
   
-  # Thailand
-  gen_thai <- get_generation("thailand", date_from="2020-01-01", date_to="2020-12-31")
-  
-  
-  ember <- readxl::read_xlsx("cache/ember.xlsx", sheet="Data") %>%
-    select(year=Year,
-           country_name=Area,
-           source=Variable,
-           output_twh=`Generation (TWh)`) %>%
-    mutate(source=recode(source,
-                         "Gas"="Fossil Gas",
-                         "Hard Coal"="Coal",
-                         "Lignite"="Coal")) %>%
-    group_by(across(c(-output_twh))) %>%
-    summarise_at("output_twh", sum) %>%
-    mutate(iso2=countrycode(country_name, "country.name", "iso2c"))
-  
-  
-  compare <- gen %>%
-    inner_join(ember,
-               by=c("year", "iso2", "source"),
-               suffix=c("_crea","_ember")) %>%
-    mutate(diff_abs = abs(output_twh_crea-output_twh_ember),
-           diff_rel = diff_abs/output_twh_ember,
-           ok=(diff_rel<0.25) | (diff_abs<1))
-  
-  # Not OK at the moment. EMBER data is different from (better than) ENTSO
-  
 })
 
 test_that("[CHINA] Power generation data makes sense", {
   
   gen_raw <- get_generation("wind", date_from="2018-01-01", date_to="2021-12-31")
-  
-  
-  
   gen <- gen_raw %>%
     filter(!is.na(iso2)) %>%
     group_by(iso2, source, year=lubridate::year(date), month=lubridate::month(date)) %>%
     mutate(output_mwh=output_mw * duration_hours) %>%
     summarise(output_twh=sum(output_mwh)/1e6)
   
-  
+  library(ggplot2)
   ggplot(gen %>%   filter(source %in% c("Solar","Wind"))) +
     geom_bar(stat="identity", aes(month, output_twh, fill=factor(year)), position="dodge") +
     facet_wrap(~source)
@@ -198,9 +168,10 @@ test_that("[CHINA] Power generation data makes sense", {
   
   compare_wide <- compare %>%
     tidyr::pivot_wider(names_from=data_source, values_from="output_twh") %>%
-    mutate(err=CREA-Wind)
+    mutate(err_abs=CREA-Wind,
+           err_rel=(CREA-Wind)/Wind)
   
-  expect_lt(max(abs(compare_wide$err)), 1e-10)
+  expect_lt(max(abs(compare_wide$err_rel)), 1e-3)
   
   compare %>%
     ggplot() +

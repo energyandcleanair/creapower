@@ -3,6 +3,8 @@ library(testthat)
 
 test_that("Power generation collection works", {
 
+  readRenviron("../../.Renviron")
+  
   data_sources <- available_data_sources()
   
   for(data_source in data_sources){
@@ -18,7 +20,7 @@ test_that("Power generation collection works", {
     expect_true(all(unique(d$iso2) %in% data_source_iso2s(data_source=data_source)))
     
     # Shouldn't be grouped
-    expect_false(is.grouped_df(d))
+    expect_false(dplyr::is.grouped_df(d))
     
     # Dates should match
     expect_true(min(d$date) >= date_from)
@@ -52,12 +54,12 @@ test_that("Power generation collection works", {
       ))
     
     compare <- d %>%
-      group_by(iso2, region, data_source, date) %>%
-      summarise(output_mw1=sum(output_mw)) %>%
-      left_join(
+      dplyr::group_by(iso2, region, data_source, date) %>%
+      dplyr::summarise(output_mw1=sum(output_mw)) %>%
+      dplyr::left_join(
         d_homogenised %>%
-          group_by(iso2, region, data_source, date) %>%
-          summarise(output_mw2=sum(output_mw))
+          dplyr::group_by(iso2, region, data_source, date) %>%
+          dplyr::summarise(output_mw2=sum(output_mw))
       )
     
     # No double counting
@@ -67,7 +69,7 @@ test_that("Power generation collection works", {
     
     # Hourly complete
     d.complete <- d %>%
-      tidyr::complete(nesting(iso2, region, data_source, source), date,
+      tidyr::complete(tidyr::nesting(iso2, region, data_source, source), date,
                       fill=list(output_mw=0))
     
     expect_equal(nrow(d.complete), nrow(d))

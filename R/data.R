@@ -1,6 +1,6 @@
 available_data_sources <- function(){
   c("japan", "eia", "posoco", "bmrs", "thailand", "wind", "turkey", 
-    "south africa", "south korea", "entso")
+    "southafrica", "southkorea", "entso")
 }
 
 

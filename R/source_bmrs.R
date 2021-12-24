@@ -46,7 +46,8 @@ bmrs.collect_generation <- function(date_from, date_to=lubridate::today(tzone="U
   gen <- gen %>%
     ungroup() %>%
     tidyr::complete(nesting(iso2, region, data_source, source), date,
-                    fill=list(output_mw=0, duration_hours=1))
+                    fill=list(output_mw=0, duration_hours=1)) %>%
+    filter(!is.na(date))
   
   return(gen)
 }

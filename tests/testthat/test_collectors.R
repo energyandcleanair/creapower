@@ -3,6 +3,7 @@ library(testthat)
 
 test_that("Power generation collection works", {
 
+  
   readRenviron("../../.Renviron")
   
   data_sources <- available_data_sources()

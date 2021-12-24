@@ -1,4 +1,4 @@
-skorea.iso2s <- function(){
+southkorea.iso2s <- function(){
   'KR'
 }
 
@@ -11,7 +11,7 @@ skorea.iso2s <- function(){
 #'
 #' @examples
 
-skorea.collect_generation <- function(date_from, date_to=lubridate::today(tzone="UTC")+1){
+southkorea.collect_generation <- function(date_from, date_to=lubridate::today(tzone="UTC")+1){
   url <- 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSinHKRdPIEm3PJjt_23QMJLA4z8DK0WhG4G3WacOBLKG4JtLMfzoYD58KFHTt2xw/pub?gid=2036731479&single=true&output=csv'
   
   data <- read.csv(url)

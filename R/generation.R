@@ -37,6 +37,8 @@ get_generation <- function(date_from,
   }) %>%
     do.call(bind_rows, .)
   
+  if(nrow(d)==0) return(tibble())
+  
   if(!is.null(iso2)){
     d <- d %>%
       filter(iso2 %in% !!iso2)

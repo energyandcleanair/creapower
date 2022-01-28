@@ -21,7 +21,11 @@ Imports:
     shinyURL,
     rclipboard,
     rio,
-    magrittr
+    magrittr,
+	dplyr,
+	lubridate,
+	readr,
+	tidyr,
 Remotes:
     hubert-thieriot/entsoeapi,
     aoles/shinyURL

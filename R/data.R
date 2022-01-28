@@ -1,6 +1,6 @@
 available_data_sources <- function(){
   c("japan", "eia", "posoco", "bmrs", "thailand", "wind", "turkey", 
-    "southafrica", "southkorea", "entso")
+    "southafrica", "southkorea", "entso", "philippines")
 }
 
 
@@ -16,6 +16,7 @@ data_source_reference <- function(data_source){
     "south korea"="Korea Electric Power Corporation (KEPCO)",
     "south africa"="Eskom",
     "turkey"="Turkish Electricity Transmission Corporation (TEIAS)",
+    "philippines"="Independent Electricity Market Operator of the Philippines",
     "wind"="Wind")[[data_source]]
 }
 

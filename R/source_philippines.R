@@ -11,7 +11,7 @@ philippines.iso2s <- function(){
 #'
 #' @examples
 
-philippines.collect_generation <- function(date_from, date_to=lubridate::today(tzone="Asia/Manila")-1){
+philippines.collect_generation <- function(date_from, date_to = lubridate::today(tzone = "Asia/Manila")-1){
   yesterday_from <- date_from-1
   dir.create(file.path(tempdir(), '1'))
   dir.create(file.path(tempdir(), '2'))
@@ -51,16 +51,16 @@ philippines.collect_generation <- function(date_from, date_to=lubridate::today(t
   
   ph_data <- ph_data %>% 
     group_by(date_short, hour, RESOURCE_NAME) %>%
-    summarise(MWh = sum(SCHED_MW)/12) %>%
+    summarise(output_mw = sum(SCHED_MW)/12) %>%
     mutate(date = lubridate::ymd_h(paste(date_short, hour), tz = 'Asia/Manila')) %>%
     left_join(ph_pp, by = c('RESOURCE_NAME' = 'RESOURCE.NAME'))
   
-  ph_data %>% rename(output_mw = MWh, source = Source) %>%
+  ph_data %>% rename(source = Source) %>%
     group_by(date, source) %>%
     summarise(output_mw = sum(output_mw)) %>%
     ungroup() %>%
     mutate(duration_hours = 1, iso2 = 'PH', region = 'Philippines', data_source = 'philippines') %>%
-    filter(lubridate::date(date) >= date_from, date < date_to+1, !is.na(source)) %>%
+    filter(date >= lubridate::date(date_from), date < date_to+1, !is.na(source)) %>%
     select(iso2, region, data_source, date, source, output_mw, duration_hours)
   
   # data <- ph_data %>% left_join(ph_pp, by = c('RESOURCE_NAME' = 'RESOURCE.NAME'))

@@ -11,7 +11,7 @@ australia.iso2s <- function(){
 #'
 #' @examples
 
-australia.collect_generation <- function(date_from, date_to = lubridate::today(tz = 'Australia/Canberra')-2){
+australia.collect_generation <- function(date_from, date_to = lubridate::today(tz = 'Australia/Canberra')-1){
   td <- tempdir()
   dir.create(file.path(td, 'extracted1'))
   dir.create(file.path(td, 'extracted2'))
@@ -67,6 +67,7 @@ australia.collect_generation <- function(date_from, date_to = lubridate::today(t
     mutate(date = lubridate::ymd_h(paste(date_short, hour), tz = 'Australia/Melbourne'),
            duration_hours = 1, iso2 = 'AU', region = 'Australia', 
            data_source = 'australia') %>%
+    filter(date < date_to) %>%
     select(iso2, region, data_source, date, source, output_mw, duration_hours)
   
 }

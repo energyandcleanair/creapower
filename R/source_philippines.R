@@ -12,7 +12,7 @@ philippines.iso2s <- function(){
 #' @examples
 
 philippines.collect_generation <- function(date_from, date_to = lubridate::today(tzone = "Asia/Manila")-1){
-  yesterday_from <- date_from-1
+  yesterday_from <- lubridate::date(date_from)-1
   dir.create(file.path(tempdir(), '1'))
   dir.create(file.path(tempdir(), '2'))
   temp_out1 <- file.path(tempdir(), '1')

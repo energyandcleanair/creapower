@@ -9,7 +9,9 @@ palette_power <- function(palette="crea"){
       "Nuclear"= "#990000",
       "Fossil Gas"= "#cacaca",
       "Coal"="#333333",
-      "Thermal"="#666666"
+      "Thermal"="#666666",
+      "Other Renewables"="#b4deaf",
+      "Unknown"="000000"
     ))[[palette]]
 }
 

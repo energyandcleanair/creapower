@@ -13,11 +13,6 @@ library(creapower)
 #####################
 # Global variables
 #####################
-data_sources <- available_data_sources()
-iso2s <- available_iso2s()
-sources <- names(palette_power())
-countries <- c(iso2s$iso2) %>% `names<-`(iso2s$region)
-
 frequency <- c(
   # "Hourly"="hour",
   "Daily"="day",
@@ -29,7 +24,6 @@ plot_types <- c("Area" = "area",
                 "Area (share)" = "area_pct",
                 "Lines" = "lines",
                 "Bars" = "bar")
-
 
 presets <- c(
   "Custom" = "custom",
@@ -45,5 +39,17 @@ preset_params <- list(
   )
 )
 
-# Download cache for latest year
-lapply(data_sources, function(ds) creapower::data.download_cache(ds, lubridate::year(lubridate::today()), freq="day"))
+# get data from api for last 5 years
+current_year <- lubridate::year(lubridate::today())
+downloaded_years <- (current_year - 4):current_year
+api_data <- get_generation_api(date_from = sprintf("%s-01-01", current_year - 4)) %>%
+  filter(!is.na(country)) # database has empty country and/or region
+
+data_sources <- available_data_sources()
+iso2s <- api_data %>% distinct(country) %>%
+  mutate(iso2 = countrycode::countrycode(country, origin = 'country.name', 
+                                         destination = 'iso2c', custom_match = c("Kosovo"="XK")))
+
+sources <- names(palette_power())
+countries <- c(iso2s$iso2) %>% `names<-`(iso2s$country)
+countries['European Union'] <- 'EU'

@@ -59,8 +59,7 @@ observe({
   sources <- as.character(unique(power_raw$source))
   updatePickerInput(session, "sources",
                     choices=sources,
-                    selected=sources
-                    )
+                    selected=sources)
 })
 
 
@@ -87,6 +86,7 @@ output$downloadCsv <- downloadHandler(
     write.csv(power(), file, row.names = FALSE)
   }
 )
+
 
 output$buttonClip <- renderUI({
   rclipButton("clipbtn", " Copy URL", input$.shinyURL, icon("copy"))
@@ -133,7 +133,7 @@ output$selectYearFrom <- renderUI({
   selectInput("year_from", "From", multiple=F,
               choices = seq(2016, lubridate::year(lubridate::today())), selected="2018")
 })
- 
+
 output$selectYearTo <- renderUI({
   selectInput("year_to", "To", multiple=F,
               choices = seq(2016, lubridate::year(lubridate::today())), selected="2021")
@@ -152,20 +152,35 @@ power_raw <- reactive({
   
   # To trigger refresh
   # input$power_refresh
-  country <- input$country
+  country_input <- input$country
   year_from <- input$year_from
   year_to <- input$year_to
-  req(country, year_from, year_to)
-    
-  # Get data
+  req(country_input, year_from, year_to)
+  
+  # api_data has the last 4 years, get more if required 
   print("Getting power data")
-  power <- creapower::get_generation(
-    date_from=sprintf("%s-01-01", year_from),
-    date_to=sprintf("%s-12-31", year_to),
-    iso2 = country,
-    homogenise = T,
-    freq = "day"
-  )
+  if(!year_from %in% downloaded_years){
+    api_data_exp <- get_generation_api(date_from = sprintf("%s-01-01", year_from),
+                                       date_to = sprintf("%s-01-01", min(downloaded_years))) %>%
+      filter(!is.na(country)) # database has empty country and/or region
+    api_data <<- api_data %>% bind_rows(api_data_exp) %>% distinct() # udpate global, prevent double counting
+    downloaded_years <<- c(downloaded_years, (year_from):min(downloaded_years)) %>%
+      unique()
+  }
+  
+  power <- api_data %>%
+    filter(date >= lubridate::date(sprintf("%s-01-01", year_from)),
+           date < lubridate::date(sprintf("%s-01-01", as.numeric(year_to) + 1))) %>% 
+    mutate(iso2 = countries[country]) %>%
+    filter(if(country_input == 'EU') region == country_input else iso2 == country_input)
+  
+  # power <- creapower::get_generation(
+  #   date_from=sprintf("%s-01-01", year_from),
+  #   date_to=sprintf("%s-12-31", year_to),
+  #   iso2 = country,
+  #   # homogenise = T,
+  #   freq = "day"
+  # )
   print("Done")
   return(power)
 })
@@ -173,22 +188,32 @@ power_raw <- reactive({
 
 power <- reactive({
   
-  power_raw <- power_raw()
-  frequency <- input$frequency
+  power_raw <- power_raw() %>% select(-iso2)
+  frequency_input <- input$frequency
   sources <- input$sources
   req(power_raw, frequency, sources)
+  country_input <- input$country
+  
   
   print("Processing power data")
   power <- power_raw %>%
     filter(source %in% sources) %>%
-    mutate(date=lubridate::floor_date(date, unit=frequency)) %>%
-    group_by(across(c(-output_mw))) %>%
-    summarise_at("output_mw", mean) %>%
+    mutate(date=lubridate::floor_date(date, unit=frequency_input)) %>%
+    group_by(across(-c(value_mw, value_mwh))) %>%
+    summarise_at("value_mw", mean) %>%
     ungroup()
+  
+  if(country_input == 'EU'){
+    power <- power %>% 
+      group_by(across(-c(country, value_mw))) %>%
+      summarise_at('value_mw', sum) %>%
+      ungroup() %>%
+      mutate(country = 'EU')
+  }
+  
   print("Done")
   
   return(power)
-  
 })
 
 
@@ -198,37 +223,37 @@ caption <- reactive({
   
   ds <- unique(power$data_source)
   ref <- paste0("Source: ", data_source_reference(ds),". ")
-  update <- paste0("Last updated on ", strftime(max(lubridate::date(power$date) + lubridate::hours(power$duration_hours), na.rm=T), "%d %B %Y."))
+  update <- paste0("Last updated on ", strftime(max(lubridate::date(power$date), na.rm=T), "%d %B %Y."))
   return(paste0(ref, update))
 })
 
 
 output$power_plot <- renderPlotly({
-
+  
   plot_type <- input$plot_type
   sources <- input$sources
   power <- power()
   caption <- caption()
   frequency <- isolate(input$frequency)
-
+  
   req(power, plot_type, sources, caption, frequency)
   
   power_sources <- power %>% filter(source %in% sources) %>%
-    group_by(date, data_source, iso2, region) %>%
-    mutate(output_pct = output_mw / sum(output_mw)) %>%
+    group_by(date, data_source, country, region) %>%
+    mutate(output_pct = value_mw / sum(value_mw)) %>%
     ungroup()
-
+  
   if(plot_type=="lines"){
     plt <- plot_ly(power_sources,
-            x = ~date,
-            y = ~output_mw,
-            color = ~source,
-            customdata=~source,
-            colors=creapower::palette_power(),
-            type = "scatter",
-            mode="lines+marker",
-            hovertemplate = '%{customdata} %{y:,.0f} MW<extra></extra>',
-            showlegend = T) %>%
+                   x = ~date,
+                   y = ~value_mw,
+                   color = ~source,
+                   customdata=~source,
+                   colors=creapower::palette_power(),
+                   type = "scatter",
+                   mode="lines+marker",
+                   hovertemplate = '%{customdata} %{y:,.0f} MW<extra></extra>',
+                   showlegend = T) %>%
       layout(
         hovermode = "x unified",
         yaxis = list(title = 'Power generation (MW)'),
@@ -237,18 +262,18 @@ output$power_plot <- renderPlotly({
   
   if(plot_type=="area"){
     plt <- plot_ly(power_sources,
-            x = ~date,
-            y = ~output_mw,
-            color = ~source,
-            customdata = ~source,
-            colors = creapower::palette_power(),
-            type = 'scatter',
-            mode = 'lines',
-            line = list(width = 0),
-            alpha = 0.9,
-            stackgroup = 'one',
-            hovertemplate = '%{customdata} %{y:,.0f} MW<extra></extra>',
-            showlegend = T) %>%
+                   x = ~date,
+                   y = ~value_mw,
+                   color = ~source,
+                   customdata = ~source,
+                   colors = creapower::palette_power(),
+                   type = 'scatter',
+                   mode = 'lines',
+                   line = list(width = 0),
+                   alpha = 0.9,
+                   stackgroup = 'one',
+                   hovertemplate = '%{customdata} %{y:,.0f} MW<extra></extra>',
+                   showlegend = T) %>%
       layout(
         hovermode = "x unified",
         yaxis = list(title = 'Power generation (MW)'),
@@ -257,18 +282,18 @@ output$power_plot <- renderPlotly({
   
   if(plot_type=="area_pct"){
     plt <- plot_ly(power_sources,
-            x = ~date,
-            y = ~output_pct,
-            color = ~factor(source),
-            customdata = ~source,
-            colors = creapower::palette_power(),
-            type = 'scatter',
-            mode = 'lines',
-            line = list(width = 0),
-            alpha = 0.9,
-            stackgroup = 'one',
-            hovertemplate = '%{customdata} %{y:.0%}<extra></extra>',
-            showlegend = T) %>%
+                   x = ~date,
+                   y = ~output_pct,
+                   color = ~factor(source),
+                   customdata = ~source,
+                   colors = creapower::palette_power(),
+                   type = 'scatter',
+                   mode = 'lines',
+                   line = list(width = 0),
+                   alpha = 0.9,
+                   stackgroup = 'one',
+                   hovertemplate = '%{customdata} %{y:.0%}<extra></extra>',
+                   showlegend = T) %>%
       layout(
         hovermode = "x unified",
         yaxis = list(title = 'Share of power generation',
@@ -281,21 +306,22 @@ output$power_plot <- renderPlotly({
     power_deyeared <- power_sources %>%
       mutate(year=lubridate::year(date),
              date2000 = lubridate::`year<-`(date, 2000)) %>%
-      group_by(iso2, region, date2000, year) %>%
-      summarise(output_mw=sum(output_mw)) %>%
+      group_by(country, region, date2000, year) %>%
+      summarise(value_mw=sum(value_mw)) %>%
       ungroup()
+    # browse()
     
     tickformat <- recode(frequency,
                          "day"="%e %b",
                          "week"= "%W",
                          "month"="%b",
                          "year"="%Y")
-    
+    # print(frequency)
     dtick <- ifelse(frequency=="month", "M1", NA)
     
     plt <- plot_ly(power_deyeared,
                    x = ~date2000,
-                   y = ~output_mw,
+                   y = ~value_mw,
                    color = ~factor(year),
                    customdata = ~year,
                    colors = 'Reds',
@@ -303,20 +329,20 @@ output$power_plot <- renderPlotly({
                    alpha = 0.9,
                    hovertemplate = '%{customdata} %{y:,.0f} MW<extra></extra>',
                    showlegend = T) %>%
-             layout(
-               hovermode = "x unified",
-               yaxis = list(title = 'Power generation (MW)'),
-               xaxis = list(title = '',
-                            dtick = dtick,
-                            tickformat=tickformat))
+      layout(
+        hovermode = "x unified",
+        yaxis = list(title = 'Power generation (MW)'),
+        xaxis = list(title = '',
+                     dtick = dtick,
+                     tickformat=tickformat))
   }
   
   plt <- plt %>%
     layout(
       annotations = list(x = 1, y = 0, text = caption, 
-         showarrow = F, xref='paper', yref='paper', 
-         xanchor='right', yanchor='auto', xshift=0, yshift=-60,
-         font=list(color="#AAAAAA")),
+                         showarrow = F, xref='paper', yref='paper', 
+                         xanchor='right', yanchor='auto', xshift=0, yshift=-60,
+                         font=list(color="#AAAAAA")),
       margin = list(b=60),
       yaxis = list(fixedrange=T))
   

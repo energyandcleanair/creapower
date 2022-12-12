@@ -159,13 +159,13 @@ power_raw <- reactive({
   
   # api_data has the last 4 years, get more if required 
   print("Getting power data")
-  if(year_from %in% downloaded_years){
-    downloaded_years <- c(downloaded_years, (year_from):min(downloaded_years)) %>%
-      unique()
+  if(!year_from %in% downloaded_years){
     api_data_exp <- get_generation_api(date_from = sprintf("%s-01-01", year_from),
                                        date_to = sprintf("%s-01-01", min(downloaded_years))) %>%
       filter(!is.na(country)) # database has empty country and/or region
-    api_data <- api_data %>% bind_rows(api_data_exp) %>% distinct() # udpate global, prevent double counting
+    api_data <<- api_data %>% bind_rows(api_data_exp) %>% distinct() # udpate global, prevent double counting
+    downloaded_years <<- c(downloaded_years, (year_from):min(downloaded_years)) %>%
+      unique()
   }
   
   power <- api_data %>%

@@ -41,6 +41,7 @@ preset_params <- list(
 
 # get data from api for last 5 years
 current_year <- lubridate::year(lubridate::today())
+downloaded_years <- (current_year - 4):current_year
 api_data <- get_generation_api(date_from = sprintf("%s-01-01", current_year - 4)) %>%
   filter(!is.na(country)) # database has empty country and/or region
 

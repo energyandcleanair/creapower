@@ -11,7 +11,7 @@ palette_power <- function(palette="crea"){
       "Coal"="#333333",
       "Thermal"="#666666",
       "Other Renewables"="#b4deaf",
-      "Unknown"="000000"
+      "Unknown"="#000000"
     ))[[palette]]
 }
 

@@ -129,6 +129,11 @@ output$selectPlotType <- renderUI({
   selectInput("plot_type", "Plot Type", multiple=F, choices = plot_types, selected="area")
 })
 
+output$selectRolling <- renderUI({
+  radioButtons('rolling', 'Rolling Average', choices = c('1 day' = 1, '7 days' = 7, '14 days' = 14),
+               selected = 1)
+})
+
 output$selectYearFrom <- renderUI({
   selectInput("year_from", "From", multiple=F,
               choices = seq(2016, lubridate::year(lubridate::today())), selected="2018")
@@ -243,7 +248,16 @@ output$power_plot <- renderPlotly({
     mutate(output_pct = value_mw / sum(value_mw)) %>%
     ungroup()
   
+  
   if(plot_type=="lines"){
+    if(input$rolling != 1 && frequency == "day"){
+      power_sources <- power_sources %>%
+        arrange(date) %>%
+        group_by(source, data_source, country, region) %>%
+        mutate(value_mw = zoo::rollmean(x = value_mw, as.numeric(input$rolling), fill = NA)) %>%
+        ungroup()
+    }
+    
     plt <- plot_ly(power_sources,
                    x = ~date,
                    y = ~value_mw,

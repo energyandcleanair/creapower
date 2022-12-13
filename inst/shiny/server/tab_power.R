@@ -89,7 +89,7 @@ output$downloadCsv <- downloadHandler(
 
 
 output$buttonClip <- renderUI({
-  rclipButton("clipbtn", " Copy URL", input$.shinyURL, icon("copy"))
+  rclipButton("clipbtn", " Copy URL", clipText=input$.shinyURL, icon=icon("copy"))
 })
 
 

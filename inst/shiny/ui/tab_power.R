@@ -18,6 +18,9 @@ tabPanel("Power generation",
              uiOutput("selectSources"),
              uiOutput("selectFrequency"),
              uiOutput("selectPlotType"),
+             # uiOutput('selectRolling'),
+             conditionalPanel('input.plot_type == "lines" && input.frequency == "day"',
+                              uiOutput("selectRolling")),
              
              div(
                class="row-inline",

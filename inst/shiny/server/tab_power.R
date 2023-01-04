@@ -247,14 +247,21 @@ output$power_plot <- renderPlotly({
     group_by(date, data_source, country, region) %>%
     mutate(output_pct = value_mw / sum(value_mw)) %>%
     ungroup()
-  
+  browser()
   
   if(plot_type=="lines"){
     if(input$rolling != 1 && frequency == "day"){
-      power_sources <- power_sources %>%
+      year_from <- input$year_from
+      year_to <- input$year_to
+      
+      dates <- seq(as.Date(paste0(year_from, '-01-01')), as.Date(paste0(year_to, '-12-31')), by = 'days')
+      
+      cross <- expand_grid(date = dates, source = sources)
+      
+      power_sources <- cross %>% left_join(power_sources) %>%
         arrange(date) %>%
         group_by(source, data_source, country, region) %>%
-        mutate(value_mw = zoo::rollmean(x = value_mw, as.numeric(input$rolling), fill = NA)) %>%
+        mutate(value_mw = zoo::rollmean(x = value_mw, as.numeric(input$rolling), fill = NA, na.rm = T)) %>%
         ungroup()
     }
     

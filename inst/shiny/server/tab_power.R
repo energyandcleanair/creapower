@@ -247,7 +247,6 @@ output$power_plot <- renderPlotly({
     group_by(date, data_source, country, region) %>%
     mutate(output_pct = value_mw / sum(value_mw)) %>%
     ungroup()
-  browser()
   
   if(plot_type=="lines"){
     if(input$rolling != 1 && frequency == "day"){

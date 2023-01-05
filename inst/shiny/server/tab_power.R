@@ -121,27 +121,32 @@ output$selectSources <- renderUI({
 
 
 output$selectFrequency <- renderUI({
-  selectInput("frequency", "Frequency", multiple=F, choices = frequency, selected="week")
+  selectInput("frequency", "Frequency", multiple=F, choices = frequency, 
+              selected="week")
 })
 
 
 output$selectPlotType <- renderUI({
-  selectInput("plot_type", "Plot Type", multiple=F, choices = plot_types, selected="area")
+  selectInput("plot_type", "Plot Type", multiple=F, choices = plot_types, 
+              selected="area")
 })
 
 output$selectRolling <- renderUI({
-  radioButtons('rolling', 'Rolling Average', choices = c('1 day' = 1, '7 days' = 7, '14 days' = 14),
+  radioButtons('rolling', 'Rolling Average', 
+               choices = c('1 day' = 1, '7 days' = 7, '14 days' = 14),
                selected = 1)
 })
 
 output$selectYearFrom <- renderUI({
   selectInput("year_from", "From", multiple=F,
-              choices = seq(2016, lubridate::year(lubridate::today())), selected="2018")
+              choices = seq(2016, lubridate::year(lubridate::today())), 
+              selected="2018")
 })
 
 output$selectYearTo <- renderUI({
   selectInput("year_to", "To", multiple=F,
-              choices = seq(2016, lubridate::year(lubridate::today())), selected="2021")
+              choices = seq(2016, lubridate::year(lubridate::today())), 
+              selected="2021")
 })
 # output$selectYears <- renderUI({
 #   sliderTextInput("years", "Years",
@@ -168,7 +173,7 @@ power_raw <- reactive({
     api_data_exp <- get_generation_api(date_from = sprintf("%s-01-01", year_from),
                                        date_to = sprintf("%s-01-01", min(downloaded_years))) %>%
       filter(!is.na(country)) # database has empty country and/or region
-    api_data <<- api_data %>% bind_rows(api_data_exp) %>% distinct() # udpate global, prevent double counting
+    api_data <<- api_data %>% bind_rows(api_data_exp) %>% distinct() # update global, prevent double counting
     downloaded_years <<- c(downloaded_years, (year_from):min(downloaded_years)) %>%
       unique()
   }
@@ -228,7 +233,8 @@ caption <- reactive({
   
   ds <- unique(power$data_source)
   ref <- paste0("Source: ", data_source_reference(ds),". ")
-  update <- paste0("Last updated on ", strftime(max(lubridate::date(power$date), na.rm=T), "%d %B %Y."))
+  update <- paste0("Last updated on ", 
+                   strftime(max(lubridate::date(power$date), na.rm=T), "%d %B %Y."))
   return(paste0(ref, update))
 })
 
@@ -248,36 +254,59 @@ output$power_plot <- renderPlotly({
     mutate(output_pct = value_mw / sum(value_mw)) %>%
     ungroup()
   
-  if(plot_type=="lines"){
+  if(plot_type %in% c("lines", 'lines_yearly')){
     if(input$rolling != 1 && frequency == "day"){
       year_from <- input$year_from
       year_to <- input$year_to
       
-      dates <- seq(as.Date(paste0(year_from, '-01-01')), as.Date(paste0(year_to, '-12-31')), by = 'days')
+      dates <- seq(as.Date(paste0(year_from, '-01-01')), as.Date(paste0(year_to, '-12-31')), 
+                   by = 'days')
       
-      cross <- expand_grid(date = dates, source = sources)
+      cross <- expand_grid(date = dates, source = sources) 
       
       power_sources <- cross %>% left_join(power_sources) %>%
         arrange(date) %>%
         group_by(source, data_source, country, region) %>%
-        mutate(value_mw = zoo::rollmean(x = value_mw, as.numeric(input$rolling), fill = NA, na.rm = T)) %>%
+        mutate(value_mw = zoo::rollmean(x = value_mw, as.numeric(input$rolling), 
+                                        fill = NA, na.rm = T)) %>%
         ungroup()
     }
     
-    plt <- plot_ly(power_sources,
-                   x = ~date,
-                   y = ~value_mw,
-                   color = ~source,
-                   customdata=~source,
-                   colors=creapower::palette_power(),
-                   type = "scatter",
-                   mode="lines+marker",
-                   hovertemplate = '%{customdata} %{y:,.0f} MW<extra></extra>',
-                   showlegend = T) %>%
-      layout(
-        hovermode = "x unified",
-        yaxis = list(title = 'Power generation (MW)'),
-        xaxis = list(title = ''))
+    power_sources <- power_sources %>% mutate(year = lubridate::year(date),
+                                              month = lubridate::month(date),
+                                              doy = lubridate::yday(date))
+       
+    if(plot_type == 'lines'){
+      plt <- plot_ly(power_sources,
+                     x = ~date,
+                     y = ~value_mw,
+                     color = ~source,
+                     customdata=~source,
+                     colors=creapower::palette_power(),
+                     type = "scatter",
+                     mode="lines+marker",
+                     hovertemplate = '%{customdata} %{y:,.0f} MW<extra></extra>',
+                     showlegend = T) %>%
+        layout(
+          hovermode = "x unified",
+          yaxis = list(title = 'Power generation (MW)'),
+          xaxis = list(title = ''))
+    } else if(plot_type == 'lines_yearly'){
+      p <- ggplot(power_sources, aes(x = doy, y = value_mw, color = as.factor(year), 
+                                     group = as.factor(year),
+                                     text = paste0('Date: ', date, '<br>',
+                                                   'Value (MW): ', sprintf(value_mw, fmt = '%#.2f'), '<br>',
+                                                   'Year: ', year))) +
+        geom_path() +
+        facet_wrap(~ source, scales = 'free_y') +
+        expand_limits(y = 0) +
+        labs(x = 'Day of year',
+             y = 'Value (MW)',
+             color = 'Year')
+      
+      plt <- ggplotly(p, tooltip = 'text')
+    }
+    
   }
   
   if(plot_type=="area"){

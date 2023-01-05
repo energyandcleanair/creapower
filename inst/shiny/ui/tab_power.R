@@ -19,7 +19,8 @@ tabPanel("Power generation",
              uiOutput("selectFrequency"),
              uiOutput("selectPlotType"),
              # uiOutput('selectRolling'),
-             conditionalPanel('input.plot_type == "lines" && input.frequency == "day"',
+             conditionalPanel(paste('(input.plot_type == "lines" || input.plot_type == "lines_yearly")', 
+                                    '&& input.frequency == "day"'),
                               uiOutput("selectRolling")),
              
              div(

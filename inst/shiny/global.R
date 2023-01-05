@@ -24,6 +24,7 @@ frequency <- c(
 plot_types <- c("Area" = "area",
                 "Area (share)" = "area_pct",
                 "Lines" = "lines",
+                "Lines (yearly)" = "lines_yearly",
                 "Bars" = "bar")
 
 presets <- c(

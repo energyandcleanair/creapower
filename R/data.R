@@ -21,7 +21,8 @@ data_source_reference <- function(data_source){
     "iemop_ph"="Independent Electricity Market Operator of the Philippines (IEMOP)",
     "newmweb_au"="Australian Energy Market Operator (AEMO)",
     "nldc_vn"="National Load Dispatch Centre of Vietnam (NLDC)",
-    "wind_cn"="Wind")[[data_source]]
+    "wind_cn"="Wind",
+    "crea"="Centre for Research on Energy and Clean Air")[[data_source]]
 }
 
 

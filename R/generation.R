@@ -198,7 +198,7 @@ homogenise_generation <- function(gen, do_factor=T){
 get_generation_api <- function(date_from,
                                date_to=lubridate::today() + 1,
                                # data_source=available_data_sources(),
-                               country=NULL, freq=NULL){
+                               country=NULL, freq='daily,monthly'){
   api_url <- 'https://api.energyandcleanair.org/power/generation'
   api_data <- httr::content(httr::GET(api_url, 
                                       query = list(date_from = date_from, date_to = date_to, 
@@ -216,7 +216,7 @@ get_generation_api <- function(date_from,
 #' @param country
 #' @param freq rounding date at this frequency: can be second, minute, hour, day, week, month, bimonth, quarter, season, halfyear or year
 #'
-#' @return tibble of power generation data
+#' @return tibble of gas data
 #' @export
 #'
 #' @examples
@@ -225,7 +225,8 @@ get_gas_api <- function(date_from,
                         # data_source=available_data_sources(),
                         country=NULL, freq=NULL){
   api_url <- 'https://api.energyandcleanair.org/energy/demand?data_source=crea&fuel=fossil_gas&date_from=-10'
-  api_data <- httr::content(httr::GET(api_url, query = list(date_from = date_from, date_to = date_to, format = 'csv')))
+  api_data <- httr::content(httr::GET(api_url, query = list(date_from = date_from, date_to = date_to, 
+                                                            format = 'csv', country = country)))
   
   return(api_data)
 }

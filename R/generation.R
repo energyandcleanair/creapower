@@ -224,7 +224,7 @@ get_gas_api <- function(date_from,
                         date_to=lubridate::today() + 1,
                         # data_source=available_data_sources(),
                         country=NULL, freq=NULL){
-  api_url <- 'https://api.energyandcleanair.org/energy/demand?data_source=crea&fuel=fossil_gas&date_from=-10'
+  api_url <- 'https://api.energyandcleanair.org/energy/demand?'
   api_data <- httr::content(httr::GET(api_url, query = list(date_from = date_from, date_to = date_to, 
                                                             format = 'csv', country = country)))
   

@@ -19,7 +19,11 @@ tabPanel("Power generation",
              uiOutput("selectFrequency"),
              uiOutput("selectPlotType"),
              # uiOutput('selectRolling'),
-             conditionalPanel(paste('(input.plot_type == "lines" || input.plot_type == "lines_yearly")', 
+             
+             conditionalPanel(paste('(input.plot_type == "lines" ||', # javascript condition
+                                    'input.plot_type == "lines_yearly" ||',
+                                    'input.plot_type == "area" ||',
+                                    'input.plot_type == "area_pct")', 
                                     '&& input.frequency == "day"'),
                               uiOutput("selectRolling")),
              
@@ -29,8 +33,6 @@ tabPanel("Power generation",
                uiOutput("selectYearFrom"),
                uiOutput("selectYearTo")
              ),
-             
-             
              
              h4("Download"),
              downloadButton(outputId="downloadCsv",

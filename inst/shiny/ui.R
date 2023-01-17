@@ -13,6 +13,7 @@ ui <- navbarPage(
     id = "nav-page",
     
     source(file.path("ui", "tab_power.R"),  local = TRUE)$value,
+    source(file.path("ui", "tab_gas.R"),  local = TRUE)$value,
     source(file.path("ui", "tab_about.R"),  local = TRUE)$value,
     
     tags$head(

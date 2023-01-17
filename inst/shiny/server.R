@@ -13,6 +13,7 @@ server <- function(input, output, session) {
 
 
     source(file.path("server", "tab_power.R"),  local = TRUE)$value
+    source(file.path("server", "tab_gas.R"),  local = TRUE)$value
     # source(file.path("server", "tab_methodology.R"),  local = TRUE)$value
     source(file.path("server", "tab_about.R"),  local = TRUE)$value
   

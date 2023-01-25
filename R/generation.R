@@ -24,7 +24,7 @@ get_generation <- function(date_from,
   }
   
   years <- seq(lubridate::year(date_from), lubridate::year(date_to))
-
+  
   d <- lapply(data_source, function(ds){
     lapply(years, function(year){
       f <- data.download_cache(data_source=ds, year=year, force=F, freq=freq)
@@ -66,7 +66,6 @@ get_generation <- function(date_from,
 }
 
 
-
 combine_generation_cache_and_new <- function(d_cache, d_new){
   if(is.null(d_cache) || nrow(d_cache)==0){
     return(d_new)
@@ -80,8 +79,8 @@ combine_generation_cache_and_new <- function(d_cache, d_new){
 
 
 collect_generation <- function(data_source,
-                                    date_from,
-                                    date_to=lubridate::today(tzone="UTC") + 2, ...){
+                               date_from,
+                               date_to=lubridate::today(tzone="UTC") + 2, ...){
   collect_fn <- get(sprintf("%s.collect_generation", data_source))
   return(collect_fn(date_from=date_from, date_to=date_to, ...))
 }
@@ -187,4 +186,52 @@ homogenise_generation <- function(gen, do_factor=T){
   }
   
   return(d)
+}
+
+
+#' Getting generation data from various data sources using CREA API.
+#'
+#' @param date_from 
+#' @param date_to 
+#' @param country
+#' @param freq rounding date at this frequency: can be second, minute, hour, day, week, month, bimonth, quarter, season, halfyear or year
+#'
+#' @return tibble of power generation data
+#' @export
+#'
+#' @examples
+get_generation_api <- function(date_from,
+                               date_to=lubridate::today() + 1,
+                               # data_source=available_data_sources(),
+                               country=NULL, freq='daily,monthly'){
+  api_url <- 'https://api.energyandcleanair.org/power/generation'
+  api_data <- httr::content(httr::GET(api_url, 
+                                      query = list(date_from = date_from, date_to = date_to, 
+                                                   format = 'csv', country = country,
+                                                   frequency = freq)))
+  
+  return(api_data)
+}
+
+
+#' Getting gas data using CREA API.
+#'
+#' @param date_from 
+#' @param date_to 
+#' @param country
+#' @param freq rounding date at this frequency: can be second, minute, hour, day, week, month, bimonth, quarter, season, halfyear or year
+#'
+#' @return tibble of gas data
+#' @export
+#'
+#' @examples
+get_gas_api <- function(date_from,
+                        date_to=lubridate::today() + 1,
+                        # data_source=available_data_sources(),
+                        country=NULL, freq=NULL){
+  api_url <- 'https://api.energyandcleanair.org/energy/demand?'
+  api_data <- httr::content(httr::GET(api_url, query = list(date_from = date_from, date_to = date_to, 
+                                                            format = 'csv', country = country)))
+  
+  return(api_data)
 }

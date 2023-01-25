@@ -96,6 +96,7 @@ update_generation <- function(data_source,
                               use_cache=T,
                               download_from_gcs=T,
                               upload_to_gcs=T,
+                              upload_to_db=F,
                               cache_folder="cache"){
   
   
@@ -151,6 +152,10 @@ update_generation <- function(data_source,
   
   if(upload_to_gcs){
     gcs.upload(source_path=file_cache_daily, dest_path=file_base_daily)
+  }
+  
+  if(upload_to_db){
+    db.upload(d_daily)
   }
   
   return(d)

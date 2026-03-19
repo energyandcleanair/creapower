@@ -19,12 +19,6 @@ deployShinyApp <- function() {
                             token=Sys.getenv("SHINYAPP_TOKEN"),
                             secret=Sys.getenv("SHINYAPP_SECRET"))
 
-  # Deploy a secret version
-  # rsconnect::deployApp(".",
-  #                      appName="whoimpact-A87EJQ1",
-  #                      account = Sys.getenv("SHINYAPP_ACCOUNT"),
-  #                      forceUpdate = T)
-
   # # Deploy production
   rsconnect::deployApp("inst/shiny",
                        appName="power",
